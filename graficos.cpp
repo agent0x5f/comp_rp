@@ -30,6 +30,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(520, 10));
     limpia->Bind(wxEVT_BUTTON, &MyFrame::OnlimpiaClick, this);
     wxFrameBase::CreateStatusBar();
+    grafica2d = new wxButton(panel, wxID_ANY, "Grafica 2D", wxPoint(580, 10));
+    grafica3d = new wxButton(panel, wxID_ANY, "Grafica 3D", wxPoint(640, 10));
 }
 
 void MyFrame::OnOpenExplorer(const wxCommandEvent& event) {
@@ -94,4 +96,10 @@ void MyFrame::OnCheckClick(wxCommandEvent& event) {
     Algoritmo::verbo = event.IsChecked();
 }
 
+void MyFrame::OnButton2DClick(wxCommandEvent& event) {
+    canvas->SetModo3D(false);
+}
 
+void MyFrame::OnButton3DClick(wxCommandEvent& event) {
+    canvas->SetModo3D(true);
+}
