@@ -24,7 +24,14 @@ int limite = 0;//iteraciones de creacion de clases, solo para debug/limitar caso
 
 //recibe el índice y retorna un string con todos los elementos en formato x, y...
 string Algoritmo::logM(const int pos) {
-    string msg = "["+std::to_string(matrizDatos[pos][0])+" ,"+ std::to_string(matrizDatos[pos][1])+"]";
+    string msg = "[";
+    for (size_t i = 0; i < matrizDatos[pos].size(); ++i) {
+        msg += std::to_string(matrizDatos[pos][i]);
+        if (i < matrizDatos[pos].size() - 1) {
+            msg += ", ";
+        }
+    }
+    msg += "]";
     return msg;
 }
 //recibe un string y lo imprime en *out
