@@ -259,7 +259,6 @@ void Algoritmo::realizarClasificacion(wxTextCtrl *out) {
                     }
                 }
             }
-
             listaIndices[i] = claseAsignada;
             if (verbo && out) {
                 log("Elemento " + logM(i) + " -> Clase " + to_string(claseAsignada+1) + "\n", out);
