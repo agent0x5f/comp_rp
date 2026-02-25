@@ -13,21 +13,26 @@ public:
     static void log(std::string msg, wxTextCtrl *out);
     void OnCheckClick(wxCommandEvent& event);
     void OnlimpiaClick(wxCommandEvent& event);
+    
+    // Declaración de las nuevas funciones para los botones 2D y 3D
     void OnButton2DClick(wxCommandEvent& event);
     void OnButton3DClick(wxCommandEvent& event);
+
 private:
-    wxButton* cargar_archivo; //explorador del sistema
-    wxStaticText* etiqueta1; //semilla
-    wxTextCtrl* textbox1; //semilla
-    wxTextCtrl* textbox2; //archivo entrada
-    wxButton* calcula; //run
-    wxTextCtrl* consola; //terminal
+    wxButton* cargar_archivo;
+    wxStaticText* etiqueta1;
+    wxTextCtrl* textbox1;
+    wxTextCtrl* textbox2;
+    wxButton* calcula;
+    wxTextCtrl* consola;
     MyGraphCanvas *canvas;
-    wxButton* exporta; //imprime el csv con las clases resultantes
+    wxButton* exporta;
     wxCheckBox * checkbox1;
-    wxButton* limpia;//limpia la consola
-    wxButton* grafica2D;
-    wxButton* grafica3D;
+    wxButton* limpia;
+    
+    // Declaración de los nuevos botones
+    wxButton* grafica2d;
+    wxButton* grafica3d;
 };
 
 #endif
