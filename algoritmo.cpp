@@ -50,48 +50,49 @@ int Algoritmo::obtenerIndiceAleatorio() {
     return distribucion(generador); //retornamos el número generado
 }
 
+// Nueva función auxiliar para n-dimensiones
+double Algoritmo::calcularDistancia(const std::vector<int>& p1, const std::vector<int>& p2) {
+    double suma = 0.0;
+    // Usamos el tamaño menor para evitar desbordamientos, aunque idealmente deberían ser iguales
+    size_t dimensiones = std::min(p1.size(), p2.size()); 
+    
+    for (size_t i = 0; i < dimensiones; ++i) {
+        double diff = static_cast<double>(p1[i]) - static_cast<double>(p2[i]);
+        suma += diff * diff;
+    }
+    return std::sqrt(suma);
+}
+
 //recibe: elemento, retorna: valor a mayor distancia de este.
-int Algoritmo::obtenerMasLejano(int indiceReferencia,wxTextCtrl *out) {
+int Algoritmo::obtenerMasLejano(int indiceReferencia, wxTextCtrl *out) {
     if (verbo && out) {
         log("Calculando distancias...\n",out);
     }
     int masLejano = 0;
     double maxDistanciaSq = -1.0;
-    // Verificamos que la matriz no esté vacía y que el índice solicitado sea válido
+    
     if (matrizDatos.empty() || indiceReferencia < 0 || indiceReferencia >= (int)matrizDatos.size()) {
         return 0;
     }
-    // Asumimos que cada vector interno tiene al menos [0] para X y [1] para Y
-    int xRef = matrizDatos[indiceReferencia][0];
-    int yRef = matrizDatos[indiceReferencia][1];
-    // Recorrer la matriz para comparar distancias
+
     for (int i = 0; i < (int)matrizDatos.size(); ++i) {
-        if (i == indiceReferencia) continue; //no comparo consigo mismo
+        if (i == indiceReferencia) continue; // no comparo consigo mismo
 
-        if (matrizDatos[i].size() >= 2) {   //x,y ...
-            int xActual = matrizDatos[i][0];
-            int yActual = matrizDatos[i][1];
+        // Llamada a la nueva función n-dimensional
+        double distSq = calcularDistancia(matrizDatos[i], matrizDatos[indiceReferencia]);
 
-            // Cálculo de distancia euclides   sqrt(x2 - x1)^2 + (y2 - y1)^2
-            double distSq = sqrt(pow(xActual - xRef, 2) + pow(yActual - yRef, 2));
-            //Aquí podemos mutear el log con el boton verboso
-            if (verbo && out) {
-                std::stringstream ss;// Creamos un flujo de string para formatear
-                ss << std::fixed << std::setprecision(2) << distSq;
-                // Ahora construimos el mensaje usando ss.str()
-                string mensaje = "Dist: [" + std::to_string(xActual) + ", "+std::to_string((yActual))+"] - [" + std::to_string(xRef)+", "+std::to_string((yRef)) + "] = " + ss.str() + "\n";
-                log(mensaje, out);
-            }
-            if (distSq > maxDistanciaSq) {
-                maxDistanciaSq = distSq;
-                masLejano = i;
-                dist_mayor = distSq;
-            }
+        if (verbo && out) {
+            string mensaje = "Dist: " + logM(i) + " - " + logM(indiceReferencia) + " = " + a2decimal(distSq) + "\n";
+            log(mensaje, out);
+        }
+        if (distSq > maxDistanciaSq) {
+            maxDistanciaSq = distSq;
+            masLejano = i;
+            dist_mayor = distSq;
         }
     }
     return masLejano;
 }
-
 //recibe un elemento, retorna el elemento más cercano a este, usa euclides
 int Algoritmo::obtenerMasCercano(int indiceReferencia,wxTextCtrl *out) {
     int mas_cercano = 0;
@@ -163,32 +164,29 @@ void Algoritmo::max_min_ini(wxTextCtrl* out) {
             listaIndices[lejano] = ++num_clases; // Clase 1
             log("Grupo 2 en #" + std::to_string(lejano) + ": " + logM(lejano) + '\n', out);
 
-            // Calcular la distancia inicial para el umbral
-            dist_mayor_inicial = sqrt(pow(matrizDatos[n][0] - matrizDatos[lejano][0], 2) +
-                                      pow(matrizDatos[n][1] - matrizDatos[lejano][1], 2));
+            // Calcular la distancia inicial n-dimensional
+            dist_mayor_inicial = calcularDistancia(matrizDatos[n], matrizDatos[lejano]);
 
             stringstream ss2;
             ss2 << std::fixed << std::setprecision(2) << dist_mayor_inicial;
             log("Distancia Inicial (C1-C2): " + ss2.str() + "\n", out);
 
-            //  Inicializar matrizDistancias con los 2 primeros centros
             matrizDistancias.assign(matrizDatos.size(), vector<float>());
 
             // Llenar distancias hacia Centro 1 (n)
             for(int i=0; i < (int)matrizDatos.size(); ++i) {
-                double d = sqrt(pow(matrizDatos[i][0] - matrizDatos[n][0], 2) + pow(matrizDatos[i][1] - matrizDatos[n][1], 2));
+                double d = calcularDistancia(matrizDatos[i], matrizDatos[n]);
                 matrizDistancias[i].push_back((float)d);
             }
             // Llenar distancias hacia Centro 2 (lejano)
             for(int i=0; i < (int)matrizDatos.size(); ++i) {
-                double d = sqrt(pow(matrizDatos[i][0] - matrizDatos[lejano][0], 2) + pow(matrizDatos[i][1] - matrizDatos[lejano][1], 2));
+                double d = calcularDistancia(matrizDatos[i], matrizDatos[lejano]);
                 matrizDistancias[i].push_back((float)d);
             }
 
-            // Configuramos dist_mayor para que entre al bucle
             dist_mayor = dist_mayor_inicial;
 
-            // 5. Bucle para encontrar resto de centros
+            // Bucle para encontrar resto de centros
             while (dist_mayor > (Algoritmo::umbral * dist_mayor_inicial) && limite < 100) {
                 max_min(out);
                 ++limite;
@@ -205,15 +203,10 @@ void Algoritmo::max_min(wxTextCtrl *out) {
     double maxDeLasMinimas = -1.0;
     int indiceCandidato = -1;
 
-    // A. Buscar el siguiente candidato (MAX-MIN)
-    // Nota: Ya no actualizamos distancias al inicio, eso se hace al FINAL de haber encontrado un centro válido.
-
     for (int i = 0; i < (int)matrizDatos.size(); ++i) {
-        if (listaIndices[i] == -1) { // Si no es un centro
-            // MIN: Distancia al centro más cercano
+        if (listaIndices[i] == -1) { 
             float distMinimaACentro = *std::min_element(matrizDistancias[i].begin(), matrizDistancias[i].end());
 
-            // MAX: El punto más lejano de todos los cercanos
             if (distMinimaACentro > maxDeLasMinimas) {
                 maxDeLasMinimas = distMinimaACentro;
                 indiceCandidato = i;
@@ -221,8 +214,6 @@ void Algoritmo::max_min(wxTextCtrl *out) {
         }
     }
 
-    // Validar contra el umbral REAL
-    // Si la distancia es > (Factor * DistanciaInicial)
     double umbralReal = Algoritmo::umbral * dist_mayor_inicial;
 
     if (indiceCandidato != -1 && maxDeLasMinimas > umbralReal) {
@@ -231,18 +222,17 @@ void Algoritmo::max_min(wxTextCtrl *out) {
         log("Max dist. rest. (" + a2decimal(maxDeLasMinimas) + ") supera umbral (" + a2decimal(umbralReal) + ").\n", out);
         log("Grupo " + to_string(num_clases+1) + " en #" + std::to_string(indiceCandidato) + ": " + logM(indiceCandidato) + "\n", out);
 
-        // Ahora que aceptamos el centro, actualizamos la matriz de distancias
+        // Actualizamos la matriz de distancias con el nuevo centro
         for (int i = 0; i < (int)matrizDatos.size(); ++i) {
-            double d = sqrt(pow(matrizDatos[i][0] - matrizDatos[indiceCandidato][0], 2) +
-                            pow(matrizDatos[i][1] - matrizDatos[indiceCandidato][1], 2));
+            double d = calcularDistancia(matrizDatos[i], matrizDatos[indiceCandidato]);
             matrizDistancias[i].push_back((float)d);
         }
 
-        dist_mayor = maxDeLasMinimas; // Actualizamos para el while
+        dist_mayor = maxDeLasMinimas; 
     } else {
         log("====== Fin de búsqueda de centros ====== \n",out);
         log("Max dist. rest. (" + a2decimal(maxDeLasMinimas) + ") no supera umbral (" + a2decimal(umbralReal) + ").\n", out);
-        dist_mayor = 0; // Rompemos el bucle while
+        dist_mayor = 0; 
     }
 }
 
@@ -259,8 +249,8 @@ void Algoritmo::realizarClasificacion(wxTextCtrl *out) {
             // Buscar centro más cercano
             for (int j = 0; j < (int)matrizDatos.size(); ++j) {
                 if (listaIndices[j] != -1) { // Comparamos contra centros
-                    double d = sqrt(pow(matrizDatos[i][0] - matrizDatos[j][0], 2) +
-                                    pow(matrizDatos[i][1] - matrizDatos[j][1], 2));
+                    // Reemplazo de la fórmula por la función n-dimensional
+                    double d = calcularDistancia(matrizDatos[i], matrizDatos[j]);
                     if (d < distMinima) {
                         distMinima = d;
                         claseAsignada = listaIndices[j];
