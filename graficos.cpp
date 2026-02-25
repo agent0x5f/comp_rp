@@ -31,9 +31,9 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     limpia->Bind(wxEVT_BUTTON, &MyFrame::OnlimpiaClick, this);
     wxFrameBase::CreateStatusBar();
     grafica2d = new wxButton(panel, wxID_ANY, "Grafica 2D", wxPoint(580, 10));
-    grafica2d->Bing(wxEVT_BUTTON,&MyFrame::OnButton2DClick, this);
+    grafica2d->Bind(wxEVT_BUTTON,&MyFrame::OnButton2DClick, this);
     grafica3d = new wxButton(panel, wxID_ANY, "Grafica 3D", wxPoint(640, 10));
-    grafica3d->Bing(wxEVT_BUTTON,&MyFrame::OnButton3DClick, this);
+    grafica3d->Bind(wxEVT_BUTTON,&MyFrame::OnButton3DClick, this);
 }
 
 void MyFrame::OnOpenExplorer(const wxCommandEvent& event) {
