@@ -179,7 +179,7 @@ void MyGraphCanvas::OnPaint(wxPaintEvent& event) {
     int leyendaX = w - rightMargin + 20;
     int leyendaY = margin;
     gc->SetFont(fuente, *wxBLACK);
-    gc->DrawText("Grupos Encontrados:", leyendaX, leyendaY);
+    gc->DrawText("Grupos:", leyendaX, leyendaY);
     leyendaY += 25;
 
     // Pintamos Grupo 0 (No asignados / Base)

@@ -13,7 +13,7 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
 
     cargar_archivo = new wxButton(panel, wxID_ANY, "Cargar Archivo", wxPoint(10, 10), wxSize(150, 30));
     cargar_archivo->Bind(wxEVT_BUTTON, &MyFrame::OnOpenExplorer, this);
-    textbox2 = new wxTextCtrl(panel, wxID_ANY, "", wxPoint(10,50), wxSize(200,600), wxTE_READONLY | wxTE_MULTILINE | wxBORDER_SIMPLE);
+    textbox2 = new wxTextCtrl(panel, wxID_ANY, "", wxPoint(10,50), wxSize(150,600), wxTE_READONLY | wxTE_MULTILINE | wxBORDER_SIMPLE);
     calcula = new wxButton(panel,wxID_ANY, "Calcula", wxPoint(220, 10));
     calcula->Disable();
     calcula->Bind(wxEVT_BUTTON, &MyFrame::OnCalculaClick, this);
@@ -24,7 +24,7 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     checkbox1 = new wxCheckBox(panel,wxID_ANY,"Explica",wxPoint(440,15));
     checkbox1->SetValue(true);
     checkbox1->Bind(wxEVT_CHECKBOX, &MyFrame::OnCheckClick, this);
-    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(220,50), wxSize(300,600),wxTE_READONLY | wxTE_MULTILINE | wxBORDER_SIMPLE);
+    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(180,50), wxSize(330,600),wxTE_READONLY | wxTE_MULTILINE | wxBORDER_SIMPLE);
     canvas = new MyGraphCanvas(panel, wxPoint(520, 50), wxSize(750, 600));
     exporta = new wxButton(panel, wxID_ANY, "Exporta", wxPoint(1080, 10));
     limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(520, 10));

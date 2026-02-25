@@ -221,7 +221,7 @@ void Algoritmo::max_min(wxTextCtrl *out) {
     if (indiceCandidato != -1 && maxDeLasMinimas > umbralReal) {
         num_clases++;
         listaIndices[indiceCandidato] = num_clases;
-
+        log("Max dist. rest. (" + a2decimal(maxDeLasMinimas) + ") supera umbral (" + a2decimal(umbralReal) + ").\n", out);
         log("Grupo " + to_string(num_clases+1) + " en #" + std::to_string(indiceCandidato) + ": " + logM(indiceCandidato) + "\n", out);
 
         // Ahora que aceptamos el centro, actualizamos la matriz de distancias
@@ -233,7 +233,8 @@ void Algoritmo::max_min(wxTextCtrl *out) {
 
         dist_mayor = maxDeLasMinimas; // Actualizamos para el while
     } else {
-        log("Fin de búsqueda de centros. Max distancia restante (" + a2decimal(maxDeLasMinimas) + ") no supera umbral (" + a2decimal(umbralReal) + ").\n", out);
+        log("====== Fin de búsqueda de centros ====== \n",out);
+        log("Max dist. rest. (" + a2decimal(maxDeLasMinimas) + ") no supera umbral (" + a2decimal(umbralReal) + ").\n", out);
         dist_mayor = 0; // Rompemos el bucle while
     }
 }
