@@ -112,7 +112,8 @@ void MyGraphCanvas::Dibujar2D(wxGraphicsContext* gc, int w, int h) {
 
     wxFont fuente = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
     fuente.SetPointSize(12);
-    gc->SetFont(fuente, wxColour(80, 80, 8
+    gc->SetFont(fuente, wxColour(80, 80, 8);
+}
 
 void MyGraphCanvas::Dibujar3D(wxGraphicsContext* gc, int w, int h) {
     int margin = 50;
