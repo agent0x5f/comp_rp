@@ -152,6 +152,37 @@ void MyGraphCanvas::Dibujar2D(wxGraphicsContext* gc, int w, int h) {
             gc->DrawEllipse(toScreenX(Algoritmo::matrizDatos[i][0]) - 4, toScreenY(Algoritmo::matrizDatos[i][1]) - 4, 8, 8);
         }
     }
+     // leyendas
+    int maxClaseEncontrada = -1;
+    for (int c : Algoritmo::listaIndices) {
+        if (c > maxClaseEncontrada) maxClaseEncontrada = c;
+    }
+
+    int leyendaX = w - rightMargin + 20;
+    int leyendaY = margin;
+    gc->SetFont(fuente, *wxBLACK);
+    gc->DrawText("Grupos Encontrados:", leyendaX, leyendaY);
+    leyendaY += 25;
+
+    // Pintamos Grupo 0 (No asignados / Base)
+    gc->SetBrush(wxBrush(paleta[0]));
+    gc->DrawEllipse(leyendaX, leyendaY, 12, 12);
+    gc->DrawText("Sin asignar", leyendaX + 20, leyendaY - 1);
+    leyendaY += 22;
+
+    // Pintamos los demás grupos
+    for (int i = 0; i <= maxClaseEncontrada; ++i) {
+        if (i == -1) continue; // Ya dibujamos el base arriba
+
+        wxColour colorGrupo = paleta[(i + 1) % paleta.size()];
+        gc->SetBrush(wxBrush(colorGrupo));
+        gc->DrawEllipse(leyendaX, leyendaY, 12, 12);
+
+        wxString nombreGrupo = wxString::Format("Grupo %d", i + 1); // Mostramos Grupo 1, Grupo 2...
+        gc->DrawText(nombreGrupo, leyendaX + 20, leyendaY - 1);
+
+        leyendaY += 22;
+    }
 }
 void MyGraphCanvas::Dibujar3D(wxGraphicsContext* gc, int w, int h) {
     int margin = 50;
