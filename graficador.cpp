@@ -231,7 +231,7 @@ void MyGraphCanvas::Dibujar3D(wxGraphicsContext* gc, int w, int h) {
         double yp = y1 * cos(anglePitch) - z * sin(anglePitch);
         px = centroX + (x1 * escala);
         py = centroY + (yp * escala);
-    }
+    };
 
     wxFont fuenteTextos = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
     fuenteTextos.SetPointSize(9);
