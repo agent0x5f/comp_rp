@@ -222,13 +222,17 @@ void MyGraphCanvas::Dibujar3D(wxGraphicsContext* gc, int w, int h) {
    // double angleYaw = 0.5;   // Rota el plano XY
   //  double anglePitch = 0.6; // Inclina la cámara para ver la altura Z
 
-    auto proyectar = [&](double x, double y, double z, double& px, double& py) {
-        double x1 = x * cos(angleYaw) - y * sin(angleYaw);
-        double y1 = x * sin(angleYaw) + y * cos(angleYaw);
-        double yp = y1 * cos(anglePitch) - z * sin(anglePitch);
-        px = centroX + (x1 * escala);
-        py = centroY + (yp * escala);
-    };
+    auto proyectar = [&](double xOriginal, double yOriginal, double z, double& px, double& py) {
+        // Intercambiamos X e Y aquí mismo
+        double x = yOriginal;
+        double y = xOriginal;
+
+        double x1 = x * cos(angleYaw) - y * sin(angleYaw);
+        double y1 = x * sin(angleYaw) + y * cos(angleYaw);
+        double yp = y1 * cos(anglePitch) - z * sin(anglePitch);
+        px = centroX + (x1 * escala);
+        py = centroY + (yp * escala);
+    };
 
     wxFont fuenteTextos = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
     fuenteTextos.SetPointSize(9);
