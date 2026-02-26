@@ -30,9 +30,9 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(520, 10));
     limpia->Bind(wxEVT_BUTTON, &MyFrame::OnlimpiaClick, this);
     wxFrameBase::CreateStatusBar();
-    grafica2d = new wxButton(panel, wxID_ANY, "Grafica 2D", wxPoint(580, 10));
+    grafica2d = new wxButton(panel, wxID_ANY, "Grafica 2D", wxPoint(620, 10));
     grafica2d->Bind(wxEVT_BUTTON,&MyFrame::OnButton2DClick, this);
-    grafica3d = new wxButton(panel, wxID_ANY, "Grafica 3D", wxPoint(640, 10));
+    grafica3d = new wxButton(panel, wxID_ANY, "Grafica 3D", wxPoint(720, 10));
     grafica3d->Bind(wxEVT_BUTTON,&MyFrame::OnButton3DClick, this);
 }
 

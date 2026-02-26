@@ -50,11 +50,11 @@ int Algoritmo::obtenerIndiceAleatorio() {
     return distribucion(generador); //retornamos el número generado
 }
 
-// Nueva función auxiliar para n-dimensiones
+//función auxiliar para n-dimensiones, retorna distancia
 double Algoritmo::calcularDistancia(const std::vector<int>& p1, const std::vector<int>& p2) {
     double suma = 0.0;
     // Usamos el tamaño menor para evitar desbordamientos, aunque idealmente deberían ser iguales
-    size_t dimensiones = std::min(p1.size(), p2.size()); 
+    size_t dimensiones = std::min(p1.size(), p2.size());
     
     for (size_t i = 0; i < dimensiones; ++i) {
         double diff = static_cast<double>(p1[i]) - static_cast<double>(p2[i]);
@@ -78,14 +78,14 @@ int Algoritmo::obtenerMasLejano(int indiceReferencia, wxTextCtrl *out) {
     for (int i = 0; i < (int)matrizDatos.size(); ++i) {
         if (i == indiceReferencia) continue; // no comparo consigo mismo
 
-        // Llamada a la nueva función n-dimensional
+        // Llamada a la función n-dimensional
         double distSq = calcularDistancia(matrizDatos[i], matrizDatos[indiceReferencia]);
 
-        if (verbo && out) {
+        if (verbo && out) { //muestro en log
             string mensaje = "Dist: " + logM(i) + " - " + logM(indiceReferencia) + " = " + a2decimal(distSq) + "\n";
             log(mensaje, out);
         }
-        if (distSq > maxDistanciaSq) {
+        if (distSq > maxDistanciaSq) { //voy revisando si es el mayor
             maxDistanciaSq = distSq;
             masLejano = i;
             dist_mayor = distSq;
@@ -94,6 +94,7 @@ int Algoritmo::obtenerMasLejano(int indiceReferencia, wxTextCtrl *out) {
     return masLejano;
 }
 //recibe un elemento, retorna el elemento más cercano a este, usa euclides
+//TODO: soporte para n dimensiones
 int Algoritmo::obtenerMasCercano(int indiceReferencia,wxTextCtrl *out) {
     int mas_cercano = 0;
     double minDistanciaSq = 999999.0;
@@ -128,12 +129,13 @@ int Algoritmo::obtenerMasCercano(int indiceReferencia,wxTextCtrl *out) {
     return mas_cercano;
 }
 
+//formatea el string numérico a 2 decimales
 std::string Algoritmo::a2decimal(std::string text) {
     stringstream ss;
     ss << std::fixed << std::setprecision(2) << text;
     return ss.str();
 }
-
+//formatea el string numérico a 2 decimales
 std::string Algoritmo::a2decimal(double number) {
     stringstream ss;
     ss << std::fixed << std::setprecision(2) << number;
@@ -166,10 +168,7 @@ void Algoritmo::max_min_ini(wxTextCtrl* out) {
 
             // Calcular la distancia inicial n-dimensional
             dist_mayor_inicial = calcularDistancia(matrizDatos[n], matrizDatos[lejano]);
-
-            stringstream ss2;
-            ss2 << std::fixed << std::setprecision(2) << dist_mayor_inicial;
-            log("Distancia Inicial (C1-C2): " + ss2.str() + "\n", out);
+            log("Distancia Inicial (C1-C2): " + a2decimal(dist_mayor_inicial) + "\n", out);
 
             matrizDistancias.assign(matrizDatos.size(), vector<float>());
 
@@ -196,8 +195,8 @@ void Algoritmo::max_min_ini(wxTextCtrl* out) {
     }
 }
 
-//procede al resto de la generación del algoritmo ya tenemos las primeras dos clases.
-//recordemos que listaIndices contiene las clases
+//Procede al resto de la generación del algoritmo ya tenemos las primeras dos clases.
+//Recordemos que listaIndices contiene las clases
 //y que matrizDistancias las distancias entre los elementos
 void Algoritmo::max_min(wxTextCtrl *out) {
     double maxDeLasMinimas = -1.0;
@@ -214,7 +213,7 @@ void Algoritmo::max_min(wxTextCtrl *out) {
         }
     }
 
-    double umbralReal = Algoritmo::umbral * dist_mayor_inicial;
+    double umbralReal = umbral * dist_mayor_inicial;
 
     if (indiceCandidato != -1 && maxDeLasMinimas > umbralReal) {
         num_clases++;
@@ -239,13 +238,10 @@ void Algoritmo::max_min(wxTextCtrl *out) {
 //asigna a las clases generadas el resto de elementos
 void Algoritmo::realizarClasificacion(wxTextCtrl *out) {
     if(verbo && out) log("==== Clasificando elementos restantes ====\n", out);
-
     for (int i = 0; i < (int)matrizDatos.size(); ++i) {
         if (listaIndices[i] == -1) { // Solo clasificamos los que no son centros
-
             float distMinima = 999999.0;
             int claseAsignada = -1;
-
             // Buscar centro más cercano
             for (int j = 0; j < (int)matrizDatos.size(); ++j) {
                 if (listaIndices[j] != -1) { // Comparamos contra centros
