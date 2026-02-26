@@ -103,21 +103,26 @@ int Algoritmo::obtenerMasCercano(int indiceReferencia,wxTextCtrl *out) {
         return 0;
     }
     // Asumimos que cada vector interno tiene al menos [0] para X y [1] para Y
-    int xRef = matrizDatos[indiceReferencia][0];
-    int yRef = matrizDatos[indiceReferencia][1];
+    //int xRef = matrizDatos[indiceReferencia][0];
+    //int yRef = matrizDatos[indiceReferencia][1];
     // Recorrer la matriz para comparar distancias
     for (int i = 0; i < (int)matrizDatos.size(); ++i) {
         if (i == indiceReferencia) continue;
 
         if (matrizDatos[i].size() >= 2) {
-            int xActual = matrizDatos[i][0];
-            int yActual = matrizDatos[i][1];
-
+            //int xActual = matrizDatos[i][0];
+            //int yActual = matrizDatos[i][1];
             // Cálculo de distancia euclides   sqrt(x2 - x1)^2 + (y2 - y1)^2
-            double distSq = sqrt(pow(xActual - xRef, 2) + pow(yActual - yRef, 2));
+            //double distSq = sqrt(pow(xActual - xRef, 2) + pow(yActual - yRef, 2));
+            // Llamada a la función n-dimensional
+            double distSq = calcularDistancia(matrizDatos[i], matrizDatos[indiceReferencia]);
+
             //Aquí podemos mutear el log con el boton verboso
             if (verbo && out) {
-                string mensaje = "Dist: [" + std::to_string(xActual) + ", "+std::to_string((yActual))+"] - [" + std::to_string(xRef)+", "+std::to_string((yRef)) + "] = " +  a2decimal(distSq) + "\n";
+                string mensaje = "Dist: [" + std::to_string(matrizDatos[i][0]) + ", " +
+                                 std::to_string((matrizDatos[i][1])) + "] - [" +
+                                 std::to_string(matrizDatos[indiceReferencia][0]) + ", " + std::to_string(
+                                     (matrizDatos[indiceReferencia][0])) + "] = " + a2decimal(distSq) + "\n";
                 log(mensaje, out);
             }
             if (distSq < minDistanciaSq) {
