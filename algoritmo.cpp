@@ -11,7 +11,7 @@ using namespace std;
 string datos; //guarda el dataset de entrada
 int num_param = 0; //argc
 vector<int>params; //args
-vector<vector<int>> Algoritmo::matrizDatos; //los datos de entrada
+vector<vector<double>> Algoritmo::matrizDatos; //los datos de entrada
 vector<int> Algoritmo::listaIndices;  //las asignaciones de las clases
 bool Algoritmo::verbo = true; //mostrar todas las calculaciones.
 int Algoritmo::seed = 1; //semilla para el random
@@ -26,7 +26,7 @@ int limite = 0;//iteraciones de creacion de clases, solo para debug/limitar caso
 string Algoritmo::logM(const int pos) {
     string msg = "[";
     for (size_t i = 0; i < matrizDatos[pos].size(); ++i) {
-        msg += std::to_string(matrizDatos[pos][i]);
+        msg += a2decimal(matrizDatos[pos][i]);
         if (i < matrizDatos[pos].size() - 1) {
             msg += ", ";
         }
@@ -51,13 +51,13 @@ int Algoritmo::obtenerIndiceAleatorio() {
 }
 
 //función auxiliar para n-dimensiones, retorna distancia
-double Algoritmo::calcularDistancia(const std::vector<int>& p1, const std::vector<int>& p2) {
+double Algoritmo::calcularDistancia(const std::vector<double>& p1, const std::vector<double>& p2) {
     double suma = 0.0;
     // Usamos el tamaño menor para evitar desbordamientos, aunque idealmente deberían ser iguales
     size_t dimensiones = std::min(p1.size(), p2.size());
     
     for (size_t i = 0; i < dimensiones; ++i) {
-        double diff = static_cast<double>(p1[i]) - static_cast<double>(p2[i]);
+        double diff = (p1[i]) - (p2[i]);
         suma += diff * diff;
     }
     return std::sqrt(suma);
@@ -94,7 +94,6 @@ int Algoritmo::obtenerMasLejano(int indiceReferencia, wxTextCtrl *out) {
     return masLejano;
 }
 //recibe un elemento, retorna el elemento más cercano a este, usa euclides
-//TODO: soporte para n dimensiones
 int Algoritmo::obtenerMasCercano(int indiceReferencia,wxTextCtrl *out) {
     int mas_cercano = 0;
     double minDistanciaSq = 999999.0;
@@ -163,7 +162,7 @@ void Algoritmo::max_min_ini(wxTextCtrl* out) {
             stringstream ss;
             ss << std::fixed << std::setprecision(2) << umbral;
             log("Umbral factor: " + ss.str() + '\n', out);
-            log("Matriz: " + to_string(matrizDatos.size()) + " filas.\n", out);
+            log("Matriz: " + to_string(matrizDatos.size()) + " filas x "+ std::to_string(matrizDatos[0].size())+ " columnas \n", out);
             log("Grupo 1 en #" + std::to_string(n) + ": " + logM(n) + '\n', out);
 
             // Segundo Centro
@@ -243,24 +242,19 @@ void Algoritmo::max_min(wxTextCtrl *out) {
 //asigna a las clases generadas el resto de elementos
 void Algoritmo::realizarClasificacion(wxTextCtrl *out) {
     if(verbo && out) log("==== Clasificando elementos restantes ====\n", out);
+
     for (int i = 0; i < (int)matrizDatos.size(); ++i) {
         if (listaIndices[i] == -1) { // Solo clasificamos los que no son centros
-            float distMinima = 999999.0;
-            int claseAsignada = -1;
-            // Buscar centro más cercano
-            for (int j = 0; j < (int)matrizDatos.size(); ++j) {
-                if (listaIndices[j] != -1) { // Comparamos contra centros
-                    // Reemplazo de la fórmula por la función n-dimensional
-                    double d = calcularDistancia(matrizDatos[i], matrizDatos[j]);
-                    if (d < distMinima) {
-                        distMinima = d;
-                        claseAsignada = listaIndices[j];
-                    }
-                }
-            }
+
+            // Encontrar la posición de la distancia mínima en el vector de distancias de este punto.
+            // Esa posición (índice) equivale exactamente al número de la clase/centro.
+            auto min_it = std::min_element(matrizDistancias[i].begin(), matrizDistancias[i].end());
+            int claseAsignada = std::distance(matrizDistancias[i].begin(), min_it);
+
             listaIndices[i] = claseAsignada;
+
             if (verbo && out) {
-                log("Elemento " + logM(i) + " -> Clase " + to_string(claseAsignada+1) + "\n", out);
+                log("Elemento " + logM(i) + " -> Clase " + to_string(claseAsignada) + "\n", out);
             }
         }
     }

@@ -141,7 +141,7 @@ void MyGraphCanvas::Dibujar2D(wxGraphicsContext* gc, int w, int h) {
         if (Algoritmo::matrizDatos[i].size() >= 2) {
             int clase = (i < Algoritmo::listaIndices.size()) ? Algoritmo::listaIndices[i] : -1;
             gc->SetBrush(wxBrush(clase == -1 ? paleta[0] : paleta[(clase + 1) % paleta.size()]));
-            gc->DrawEllipse(toScreenX(Algoritmo::matrizDatos[i][0]) - 4, toScreenY(Algoritmo::matrizDatos[i][1]) - 4, 8, 8);
+            gc->DrawEllipse(toScreenX(Algoritmo::matrizDatos[i][0]) - 9, toScreenY(Algoritmo::matrizDatos[i][1]) - 9, 18, 18);
         }
     }
 

@@ -7,7 +7,7 @@ class wxTextCtrl;
 
 class Algoritmo {
 public:
-    static std::vector<std::vector<int>> matrizDatos;
+    static std::vector<std::vector<double>> matrizDatos;
     static std::vector<int>listaIndices;
     static int seed;
     static bool verbo;
@@ -27,7 +27,7 @@ public:
     static std::string a2decimal(std::string text);
     static std::string a2decimal(double number);
 
-    static double calcularDistancia(const std::vector<int>& p1, const std::vector<int>& p2);
+    static double calcularDistancia(const std::vector<double>& p1, const std::vector<double>& p2);
 };
 
 #endif

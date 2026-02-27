@@ -43,11 +43,11 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
         // 4. Lectura de coordenadas (X, Y)
         stringstream ss(linea);
         string valor;
-        vector<int> filaActual;
+        vector<double> filaActual;
 
         while (getline(ss, valor, ',')) {
             try {
-                filaActual.push_back(stoi(valor));
+                filaActual.push_back(stod(valor));
             } catch (...) { /* Ignorar basura */ }
         }
 

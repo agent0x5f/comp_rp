@@ -13,7 +13,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
 
     cargar_archivo = new wxButton(panel, wxID_ANY, "Cargar Archivo", wxPoint(10, 10), wxSize(150, 30));
     cargar_archivo->Bind(wxEVT_BUTTON, &MyFrame::OnOpenExplorer, this);
-    textbox2 = new wxTextCtrl(panel, wxID_ANY, "", wxPoint(10,50), wxSize(150,600), wxTE_READONLY | wxTE_MULTILINE | wxBORDER_SIMPLE);
+    textbox2 = new wxTextCtrl(panel, wxID_ANY, "", wxPoint(10,50), wxSize(120,600), wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL| wxBORDER_SIMPLE);
+    textbox2->SetFont(wxFont(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
     calcula = new wxButton(panel,wxID_ANY, "Calcula", wxPoint(220, 10));
     calcula->Disable();
     calcula->Bind(wxEVT_BUTTON, &MyFrame::OnCalculaClick, this);
@@ -24,7 +25,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     checkbox1 = new wxCheckBox(panel,wxID_ANY,"Explica",wxPoint(440,15));
     checkbox1->SetValue(true);
     checkbox1->Bind(wxEVT_CHECKBOX, &MyFrame::OnCheckClick, this);
-    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(180,50), wxSize(330,600),wxTE_READONLY | wxTE_MULTILINE | wxBORDER_SIMPLE);
+    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(140,50), wxSize(370,600),wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL | wxBORDER_SIMPLE);
+    consola->SetFont(wxFont(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
     canvas = new MyGraphCanvas(panel, wxPoint(520, 50), wxSize(750, 600));
     exporta = new wxButton(panel, wxID_ANY, "Exporta", wxPoint(1080, 10));
     limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(520, 10));
@@ -64,7 +66,7 @@ void MyFrame::OnOpenExplorer(const wxCommandEvent& event) {
 
 void MyFrame::OnCalculaClick(wxCommandEvent& event) {
     //Feedback visual en la barra de estado
-    SetStatusText("Cálculo ejecutado desde Algoritmo.");
+    SetStatusText("Calculo ejecutado desde Algoritmo.");
     log("===================================\n",consola);
     // 2. Llamamos al algoritmo y le pasamos nuestra consola
     Algoritmo::max_min_ini(consola);
