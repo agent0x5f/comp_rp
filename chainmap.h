@@ -17,5 +17,4 @@ class chainmap {
     static std::vector<std::vector<float>> matrizDistancias;
 };
 
-
 #endif //APPVISIONCENIDET_CHAINMAP_H
