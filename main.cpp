@@ -1,5 +1,5 @@
 #include <wx/wx.h>
-#include "graficos.h"
+#include "GUI.h"
 
 
 class MyApp : public wxApp {

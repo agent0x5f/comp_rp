@@ -2,9 +2,10 @@
 #include <wx/dcbuffer.h>
 #include <wx/graphics.h>
 #include "graficador.h"
-#include "maxmin.h"
 #include <algorithm>
 #include <cmath>
+#include "maxmin.h"
+#include "chainmap.h"
 
 MyGraphCanvas::MyGraphCanvas(wxWindow* parent, wxPoint pos, wxSize size)
     : wxPanel(parent, wxID_ANY, pos, size, wxBORDER_SUNKEN) 

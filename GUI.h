@@ -18,6 +18,9 @@ public:
     void OnButton2DClick(wxCommandEvent& event);
     void OnButton3DClick(wxCommandEvent& event);
 
+    //selection de algoritmo
+    void OnAlgoritmoSelect(wxCommandEvent& event);
+
 private:
     wxButton* cargar_archivo;
     wxStaticText* etiqueta1;
@@ -33,6 +36,7 @@ private:
     // Declaración de los nuevos botones
     wxButton* grafica2d;
     wxButton* grafica3d;
+    wxChoice * choice;
 };
 
 #endif

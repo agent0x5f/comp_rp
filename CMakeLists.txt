@@ -20,8 +20,8 @@ find_package(OpenCV REQUIRED)
 # --- 4. LISTAR ARCHIVOS DEL PROYECTO ---
 set(SOURCE_FILES
         main.cpp
-        graficos.cpp
-        graficos.h
+        GUI.cpp
+        GUI.h
         maxmin.cpp
         maxmin.h
         graficador.cpp
@@ -30,10 +30,12 @@ set(SOURCE_FILES
         io.h
         chainmap.cpp
         chainmap.h
+        resource.rc
 )
 
 # --- 5. CREAR EL EJECUTABLE ---
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+set(RESOURCE_FILES "resource.rc")  #v6 manifest
+add_executable(${PROJECT_NAME} WIN32 ${SOURCE_FILES})
 
 # --- 6. INCLUDES Y LINKER ---
 

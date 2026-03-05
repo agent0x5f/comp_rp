@@ -18,7 +18,7 @@ int maxmin::seed = 1; //semilla para el random
 int num_clases = 0; //cuantas clases existen actualmente.
 double maxmin::umbral = 0.5; //parametro del min-max
 double maxmin::dist_mayor = 0; //elemento mayor distancia
-vector<vector<float>> maxmin::matrizDistancias;  //distancias de cada elemento con respecto al resto -equivale a columnas del excel
+vector<vector<double>> maxmin::matrizDistancias;  //distancias de cada elemento con respecto al resto -equivale a columnas del excel
 double dist_mayor_inicial = 0;
 int limite = 0;//iteraciones de creacion de clases, solo para debug/limitar casos de error
 
@@ -63,7 +63,7 @@ double maxmin::calcularDistancia(const std::vector<double>& p1, const std::vecto
     return std::sqrt(suma);
 }
 
-//recibe: elemento, retorna: valor a mayor distancia de este.
+//recibe: elemento, retorna: pos del valor a mayor distancia de este.
 int maxmin::obtenerMasLejano(int indiceReferencia, wxTextCtrl *out) {
     if (verbo && out) {
         log("Calculando distancias...\n",out);
@@ -75,7 +75,7 @@ int maxmin::obtenerMasLejano(int indiceReferencia, wxTextCtrl *out) {
         return 0;
     }
 
-    for (int i = 0; i < (int)matrizDatos.size(); ++i) {
+    for (int i = 0; i < (int)matrizDatos.size(); ++i) { //recorro la lista
         if (i == indiceReferencia) continue; // no comparo consigo mismo
 
         // Llamada a la función n-dimensional
@@ -96,39 +96,23 @@ int maxmin::obtenerMasLejano(int indiceReferencia, wxTextCtrl *out) {
 //recibe un elemento, retorna el elemento más cercano a este, usa euclides
 int maxmin::obtenerMasCercano(int indiceReferencia,wxTextCtrl *out) {
     int mas_cercano = 0;
-    double minDistanciaSq = 999999.0;
+    double minDistancia = 999999.0;
     // Verificamos que la matriz no esté vacía y que el índice solicitado sea válido
-    if (matrizDatos.empty() || indiceReferencia < 0 || indiceReferencia >= (int)matrizDatos.size()) {
-        return 0;
-    }
+    if (matrizDatos.empty() || indiceReferencia < 0 || indiceReferencia >= (int)matrizDatos.size()) {return 0;}
     // Asumimos que cada vector interno tiene al menos [0] para X y [1] para Y
-    //int xRef = matrizDatos[indiceReferencia][0];
-    //int yRef = matrizDatos[indiceReferencia][1];
-    // Recorrer la matriz para comparar distancias
-    for (int i = 0; i < (int)matrizDatos.size(); ++i) {
+    for (int i = 0; i < (int)matrizDatos.size(); ++i) { //itero la lista, ignoro consigo mismo dist==0
         if (i == indiceReferencia) continue;
-
-        if (matrizDatos[i].size() >= 2) {
-            //int xActual = matrizDatos[i][0];
-            //int yActual = matrizDatos[i][1];
             // Cálculo de distancia euclides   sqrt(x2 - x1)^2 + (y2 - y1)^2
-            //double distSq = sqrt(pow(xActual - xRef, 2) + pow(yActual - yRef, 2));
-            // Llamada a la función n-dimensional
-            double distSq = calcularDistancia(matrizDatos[i], matrizDatos[indiceReferencia]);
-
+            double distSq = calcularDistancia(matrizDatos[i], matrizDatos[indiceReferencia]);// Llamada a la función n-dimensional
             //Aquí podemos mutear el log con el boton verboso
-            if (verbo && out) {
-                string mensaje = "Dist: [" + std::to_string(matrizDatos[i][0]) + ", " +
-                                 std::to_string((matrizDatos[i][1])) + "] - [" +
-                                 std::to_string(matrizDatos[indiceReferencia][0]) + ", " + std::to_string(
-                                     (matrizDatos[indiceReferencia][0])) + "] = " + a2decimal(distSq) + "\n";
-                log(mensaje, out);
-            }
-            if (distSq < minDistanciaSq) {
-                minDistanciaSq = distSq;
+        if (verbo && out) {
+            string mensaje = "Dist: " + logM(i) + " - " + logM(indiceReferencia) + " = " + a2decimal(distSq) + "\n";
+            log(mensaje, out);
+        }
+            if (distSq < minDistancia) {
+                minDistancia = distSq;
                 mas_cercano = i;
             }
-        }
     }
     return mas_cercano;
 }
@@ -153,44 +137,38 @@ void maxmin::max_min_ini(wxTextCtrl* out) {
     if (out) {
         std::fill(listaIndices.begin(), listaIndices.end(), -1);
         num_clases = 0;
-
+        log("Algoritmo Max-Min\n",out);
         // Primer Centro
-        int n = obtenerIndiceAleatorio();
+        int n = obtenerIndiceAleatorio(); //toma uno al azar, se basa en la semilla en la GUI
         listaIndices[n] = 0;
-
         if (!matrizDatos.empty()) {
-            stringstream ss;
-            ss << std::fixed << std::setprecision(2) << umbral;
-            log("Umbral factor: " + ss.str() + '\n', out);
+            log("Umbral factor: " + a2decimal(umbral) + "\n", out);
             log("Matriz: " + to_string(matrizDatos.size()) + " filas x "+ std::to_string(matrizDatos[0].size())+ " columnas \n", out);
             log("Grupo 1 en #" + std::to_string(n) + ": " + logM(n) + '\n', out);
-
             // Segundo Centro
-            int lejano = obtenerMasLejano(n, out);
-            listaIndices[lejano] = ++num_clases; // Clase 1
+            int lejano = obtenerMasLejano(n, out);  //busco el más lejano del primero
+            listaIndices[lejano] = ++num_clases; // Clase '1', la segunda.
             log("Grupo 2 en #" + std::to_string(lejano) + ": " + logM(lejano) + '\n', out);
-
-            // Calcular la distancia inicial n-dimensional
+            // Calcular la distancia inicial entre los 2 puntos
             dist_mayor_inicial = calcularDistancia(matrizDatos[n], matrizDatos[lejano]);
             log("Distancia Inicial (C1-C2): " + a2decimal(dist_mayor_inicial) + "\n", out);
-
-            matrizDistancias.assign(matrizDatos.size(), vector<float>());
+            //inicializo mi memoria
+            matrizDistancias.assign(matrizDatos.size(), vector<double>());
 
             // Llenar distancias hacia Centro 1 (n)
             for(int i=0; i < (int)matrizDatos.size(); ++i) {
                 double d = calcularDistancia(matrizDatos[i], matrizDatos[n]);
-                matrizDistancias[i].push_back((float)d);
+                matrizDistancias[i].push_back((double)d);
             }
             // Llenar distancias hacia Centro 2 (lejano)
             for(int i=0; i < (int)matrizDatos.size(); ++i) {
                 double d = calcularDistancia(matrizDatos[i], matrizDatos[lejano]);
-                matrizDistancias[i].push_back((float)d);
+                matrizDistancias[i].push_back((double)d);
             }
-
             dist_mayor = dist_mayor_inicial;
 
             // Bucle para encontrar resto de centros
-            while (dist_mayor > (maxmin::umbral * dist_mayor_inicial) && limite < 100) {
+            while (dist_mayor > (umbral * dist_mayor_inicial) && limite < (int)(matrizDatos.size()-2) ) {
                 max_min(out);
                 ++limite;
             }
@@ -206,11 +184,11 @@ void maxmin::max_min(wxTextCtrl *out) {
     double maxDeLasMinimas = -1.0;
     int indiceCandidato = -1;
 
-    for (int i = 0; i < (int)matrizDatos.size(); ++i) {
+    for (int i = 0; i < (int)matrizDatos.size(); ++i) {//para cada punto que no es un centro
         if (listaIndices[i] == -1) { 
-            float distMinimaACentro = *std::min_element(matrizDistancias[i].begin(), matrizDistancias[i].end());
+            double distMinimaACentro = *std::min_element(matrizDistancias[i].begin(), matrizDistancias[i].end());//cual es el min?
 
-            if (distMinimaACentro > maxDeLasMinimas) {
+            if (distMinimaACentro > maxDeLasMinimas) {//cual es el max?
                 maxDeLasMinimas = distMinimaACentro;
                 indiceCandidato = i;
             }
@@ -228,7 +206,7 @@ void maxmin::max_min(wxTextCtrl *out) {
         // Actualizamos la matriz de distancias con el nuevo centro
         for (int i = 0; i < (int)matrizDatos.size(); ++i) {
             double d = calcularDistancia(matrizDatos[i], matrizDatos[indiceCandidato]);
-            matrizDistancias[i].push_back((float)d);
+            matrizDistancias[i].push_back((double)d);
         }
 
         dist_mayor = maxDeLasMinimas; 

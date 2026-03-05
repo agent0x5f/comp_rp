@@ -1,4 +1,4 @@
-#include "graficos.h"
+#include "GUI.h"
 #include "maxmin.h"
 #include "graficador.h"
 #include <wx/wx.h>
@@ -14,28 +14,43 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     cargar_archivo = new wxButton(panel, wxID_ANY, "Cargar Archivo", wxPoint(10, 10), wxSize(150, 30));
     cargar_archivo->Bind(wxEVT_BUTTON, &MyFrame::OnOpenExplorer, this);
     textbox2 = new wxTextCtrl(panel, wxID_ANY, "", wxPoint(10,50), wxSize(120,600), wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL| wxBORDER_SIMPLE);
-    textbox2->SetFont(wxFont(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-    calcula = new wxButton(panel,wxID_ANY, "Calcula", wxPoint(220, 10));
+    textbox2->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+    calcula = new wxButton(panel,wxID_ANY, "Calcula", wxPoint(200, 10));
     calcula->Disable();
     calcula->Bind(wxEVT_BUTTON, &MyFrame::OnCalculaClick, this);
-   // checkbox1 = new wxCheckBox(panel,wxID_ANY, "Explicado", wxPoint(400,15));
-    etiqueta1 = new wxStaticText(panel, wxID_ANY, "Semilla: ", wxPoint(320,15));
-    textbox1 = new wxTextCtrl(panel, wxID_ANY, "1", wxPoint(370,10),wxSize(60,20),wxBORDER_SIMPLE);
+    wxArrayString opciones;
+    opciones.Add("Max-Min");
+    opciones.Add("Chain-map");
+    //opciones.Add("soon TM");
+    choice = new wxChoice(panel, wxID_ANY, wxPoint(280, 10), wxDefaultSize, opciones);
+    choice->Bind(wxEVT_CHOICE, &MyFrame::OnAlgoritmoSelect, this);
+    choice->SetSelection(0);//default a max-min
+
+    etiqueta1 = new wxStaticText(panel, wxID_ANY, "Semilla: ", wxPoint(420,15));
+    textbox1 = new wxTextCtrl(panel, wxID_ANY, "1", wxPoint(470,10),wxSize(60,20),wxBORDER_SIMPLE);
     textbox1->Bind(wxEVT_TEXT, &MyFrame::OnEscritura, this);
-    checkbox1 = new wxCheckBox(panel,wxID_ANY,"Explica",wxPoint(440,15));
+    checkbox1 = new wxCheckBox(panel,wxID_ANY,"Explica",wxPoint(540,15));
     checkbox1->SetValue(true);
     checkbox1->Bind(wxEVT_CHECKBOX, &MyFrame::OnCheckClick, this);
     consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(140,50), wxSize(370,600),wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL | wxBORDER_SIMPLE);
-    consola->SetFont(wxFont(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+    consola->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
     canvas = new MyGraphCanvas(panel, wxPoint(520, 50), wxSize(750, 600));
-    exporta = new wxButton(panel, wxID_ANY, "Exporta", wxPoint(1080, 10));
-    limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(520, 10));
+    //exporta = new wxButton(panel, wxID_ANY, "Exporta", wxPoint(1080, 10));
+    limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(620, 10));
     limpia->Bind(wxEVT_BUTTON, &MyFrame::OnlimpiaClick, this);
     wxFrameBase::CreateStatusBar();
-    grafica2d = new wxButton(panel, wxID_ANY, "Grafica 2D", wxPoint(620, 10));
+    grafica2d = new wxButton(panel, wxID_ANY, "Grafica 2D", wxPoint(720, 10));
     grafica2d->Bind(wxEVT_BUTTON,&MyFrame::OnButton2DClick, this);
-    grafica3d = new wxButton(panel, wxID_ANY, "Grafica 3D", wxPoint(720, 10));
+    grafica3d = new wxButton(panel, wxID_ANY, "Grafica 3D", wxPoint(820, 10));
     grafica3d->Bind(wxEVT_BUTTON,&MyFrame::OnButton3DClick, this);
+}
+
+void MyFrame::OnAlgoritmoSelect(wxCommandEvent& event) {
+    if (choice->GetSelection() != wxNOT_FOUND && !maxmin::matrizDatos.empty()) {
+        calcula->Enable();
+    } else {
+        calcula->Disable();
+    }
 }
 
 void MyFrame::OnOpenExplorer(const wxCommandEvent& event) {
@@ -60,16 +75,31 @@ void MyFrame::OnOpenExplorer(const wxCommandEvent& event) {
         log("Datos cargados\n",consola);
         log("Semilla predeterminada: 1\n",consola);
         canvas->Refresh();
-        calcula->Enable();
+        if (choice->GetSelection() != wxNOT_FOUND && !maxmin::matrizDatos.empty()) {
+            calcula->Enable();
+        } else {
+            calcula->Disable();
+        }
     }
 }
 
 void MyFrame::OnCalculaClick(wxCommandEvent& event) {
-    //Feedback visual en la barra de estado
-    SetStatusText("Calculo ejecutado desde maxmin.");
-    log("===================================\n",consola);
-    // 2. Llamamos al algoritmo y le pasamos nuestra consola
-    maxmin::max_min_ini(consola);
+   int algoritmoSeleccionado = choice->GetSelection();
+    //si de alguna forma hizo clic sin seleccionar, cancelamos
+    if (algoritmoSeleccionado == wxNOT_FOUND) {
+        wxMessageBox("Por favor selecciona un algoritmo primero.", "Aviso", wxICON_WARNING);
+        return;
+    }
+    SetStatusText("Cálculo ejecutado...");
+    // Ejecutamos el algoritmo según la opción
+    switch (algoritmoSeleccionado) {
+        case 0: maxmin::max_min_ini(consola);break;
+        case 1: break;
+        default:
+            log("Error: Algoritmo no reconocido.\n", consola);
+            break;
+    }
+    // Actualizamos el canvas después de que el algoritmo termine
     canvas->Refresh();
 }
 
