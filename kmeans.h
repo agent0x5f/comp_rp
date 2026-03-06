@@ -14,19 +14,18 @@ class kmeans {
 public:
     static std::vector<std::vector<double>> matrizDatos;  //dataset de entrada
     static void ejecutar(wxTextCtrl *out);
-    static std::vector<std::vector<double>> centroides;  //lista de puntos de n-dimensiones
     static void iniciar_centroides();
-    static double umbral;
-    static int num_clases;
+    static void asignacion(wxTextCtrl* consola);
+    static void recalcula_centroides();
+    static std::string p_aString(const std::vector<double>& punto);
     static int k;
     static int seed;
     static std::vector<int> listaIndices;
     static void log(const std::string &msg, wxTextCtrl *out);
-private:
     static bool verbo;
+private:
     static std::string a2decimal(double number);
     static std::string logM(int pos);
-    static int obtenerIndiceAleatorio();
     static double calcularDistancia(const std::vector<double>& p1, const std::vector<double>& p2);
     static int obtenerCercanoNoVisitado(int indiceActual, wxTextCtrl *out);
 };

@@ -18,14 +18,19 @@ using namespace std;
 vector<vector<double>> kmeans::matrizDatos;
 vector<int> kmeans::listaIndices;
 bool kmeans::verbo = true;
-int kmeans::num_clases = 0;
+static std::vector<std::vector<double>> centroides;
+int kmeans::seed = 1; //defaults - se lee del GUI
+int kmeans::k = 3; //defaults - se lee del file
+
 
 void kmeans::iniciar_centroides() {
     centroides.clear(); //limpiamos
     std::set<int> indices_usados;
     //vamos a seleccionar nuestros k centroides de forma random
+    std::mt19937 generador(seed);
+    std::uniform_int_distribution<int> distribucion(0, (int)matrizDatos.size() - 1);
     while (indices_usados.size() < (size_t)k) {
-        int elegido = obtenerIndiceAleatorio();
+        int elegido = distribucion(generador);
 
         // insert() devuelve un par, el segundo valor es true si se insertó con éxito/no estaba repetido
         if (indices_usados.insert(elegido).second) {
@@ -34,9 +39,75 @@ void kmeans::iniciar_centroides() {
     }
 }
 
-double kmeans::umbral = 0.0;
-int kmeans::seed = 1; //defaults - se lee del GUI
-int kmeans::k = 1; //defaults - se lee del file
+void kmeans::asignacion(wxTextCtrl* consola) {
+    for (int i = 0; i < (int)matrizDatos.size(); ++i) {
+        auto punto = matrizDatos[i];
+        int mas_cercano = 0;
+        double minDistancia = calcularDistancia(punto, centroides[0]);
+
+        string log_linea = "";
+        if (verbo) log_linea = "P" + std::to_string(i) + " " + p_aString(punto) + "->dC0: " + a2decimal(minDistancia);
+
+        // Comparamos contra el resto de los centroides
+        for (int j = 1; j < k; j++) {
+            auto d = calcularDistancia(punto, centroides[j]);
+            if (verbo) log_linea += ", dC" + std::to_string(j) + ":" + a2decimal(d);
+
+            if (d < minDistancia) {
+                minDistancia = d;
+                mas_cercano = j; // Actualizamos el ganador temporal
+            }
+        }
+        if (verbo && consola) {
+            log_linea += " ->Grupo " + std::to_string(mas_cercano+1) + "\n";
+            consola->AppendText(log_linea);
+        }
+        // Guardamos el índice del centroide ganador
+        kmeans::listaIndices[i] = mas_cercano;
+    }
+}
+
+void kmeans::recalcula_centroides() {
+    std::vector<std::vector<double>> nuevos_centroides;
+    const int dimensiones = matrizDatos[0].size();
+    // Calculamos el nuevo centro para cada clúster 'x'
+    for (int x = 0; x < k; x++) {
+        std::vector<double> suma(dimensiones, 0.0);
+        int puntos_en_cluster = 0;
+        // Recorremos los puntos para ver cuáles pertenecen a este clúster 'x'
+        for (size_t p = 0; p < matrizDatos.size(); ++p) {
+            if (listaIndices[p] == x) {
+                for (int d = 0; d < dimensiones; ++d) { // Sumamos cada una de sus dimensiones
+                    suma[d] += matrizDatos[p][d];
+                }
+                puntos_en_cluster++;
+            }
+        }
+        // Si encontramos puntos en este clúster, calculamos el promedio
+        if (puntos_en_cluster > 0) {
+            for (int d = 0; d < dimensiones; ++d) {
+                suma[d] /= puntos_en_cluster; // Promedio = suma / total -ojo con el div entre 0
+            }
+            nuevos_centroides.push_back(suma);
+        } else {
+            // Si un clúster se quedó vacío, conservamos su centroide viejo para que no desaparezca.
+            nuevos_centroides.push_back(centroides[x]);
+        }
+    }
+    // Actualizamos los centroides con los nuevos
+    centroides = nuevos_centroides;
+}
+
+std::string kmeans::p_aString(const std::vector<double> &punto) {
+    string msg = "[";
+    for (size_t i = 0; i < punto.size(); ++i) {
+        msg += a2decimal(punto[i]);
+        if (i < punto.size() - 1) msg += ", ";
+    }
+    msg += "]";
+    return msg;
+}
+
 
 string kmeans::a2decimal(double number) {
     stringstream ss;
@@ -59,13 +130,6 @@ void kmeans::log(const string& msg, wxTextCtrl *out) {
         out->AppendText(msg);
         out->Update();
     }
-}
-//obtenemos el primer elemento al azar
-int kmeans::obtenerIndiceAleatorio() {
-    if (matrizDatos.empty()) return -1;
-    std::mt19937 generador(seed);  //semilla del textbox
-    std::uniform_int_distribution<int> distribucion(0, (int)matrizDatos.size() - 1);//Definimos el rango: de 0 al total de filas menos 1
-    return distribucion(generador); //retornamos el número generado
 }
 //calcula la distancia entre dos puntos de n dimensiones
 double kmeans::calcularDistancia(const std::vector<double>& p1, const std::vector<double>& p2) {
@@ -99,21 +163,51 @@ int kmeans::obtenerCercanoNoVisitado(int indiceActual, wxTextCtrl *out) {
     return mas_cercano;
 }
 
-// Función principal que ejecuta el algoritmo chainmap
-void kmeans::ejecutar(wxTextCtrl* out) {
-    if (matrizDatos.empty() || !out) {
-        log("Error: No hay datos para procesar.\n", out);
+// Función principal que ejecuta el algoritmo
+void kmeans::ejecutar(wxTextCtrl* consola) {
+    if (matrizDatos.empty() || k <= 0) {
+        if (consola) consola->AppendText("Error: Datos vacíos o K inválido.\n");
         return;
     }
-
+    if (k > (int)matrizDatos.size()) {
+        k = matrizDatos.size(); // Evitamos pedir más clústeres que puntos
+        if (consola) consola->AppendText("Nota: K mayor al número de puntos. Ajustando a " + std::to_string(k) + "\n");
+    }
+    //si vamos bien
     listaIndices.assign(matrizDatos.size(), -1);
-    num_clases = 0;
-    log("K: " + a2decimal(k) + "\n", out);
-    // Elegimos el primer punto al azar
-    int puntoActual = obtenerIndiceAleatorio();
-    listaIndices[puntoActual] = num_clases; // Lo asignamos a la Clase 0
-    log("Inicio en #" + to_string(puntoActual) + " " + logM(puntoActual) + " -> Clase 1\n", out);
+    if (consola) consola->AppendText("Iniciando k-Means con K: " + std::to_string(k) + "...\n");
 
+    iniciar_centroides();
+    bool convergencia = false;
+    int iteracion = 0;
+    int max_iteraciones = 100; // Límite de cansancio -wikipedia no lo tiene.
 
-    log("Terminado: " + to_string(num_clases + 1) + " clases generadas.\n", out);
+    // main loop
+    while (!convergencia && iteracion < max_iteraciones) {
+        iteracion++;
+        consola->AppendText("Iteracion " + std::to_string(iteracion) + "...\n");
+        // Guardamos una copia de cómo estaban los grupos en iter pasada
+
+        if (verbo && consola) {
+            for (int c = 0; c < k; ++c) {
+                consola->AppendText("Centroide " + std::to_string(c) + ": " + p_aString(centroides[c]) + "\n");
+            }
+        }
+
+        std::vector<int> indices_anteriores = listaIndices;
+        asignacion(consola);  //Asignar cada punto a su centroide más cercano
+
+        // Si la lista de índices actual es exactamente igual a la anterior, fin.
+        if (listaIndices == indices_anteriores) {
+            convergencia = true;
+            consola->AppendText("Convergencia alcanzada en la iter: " + std::to_string(iteracion) + "\n");
+            break; // Rompemos el ciclo while
+        }
+        recalcula_centroides(); //Si hubo cambios, recalculamos los centroides para la siguiente ronda
+    }
+
+    if (!convergencia && consola) { //log de terminación
+        consola->AppendText("Fin por límite de iteraciones (" + std::to_string(max_iteraciones) + ").\n");
+    }
+    if (consola) consola->AppendText("k-Means finalizado con exito.\n");
 }

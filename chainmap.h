@@ -17,8 +17,8 @@ public:
     static double umbral;
     static int num_clases;
     static std::vector<int> listaIndices;
-private:
     static bool verbo;
+private:
     static std::string a2decimal(double number);
     static std::string logM(int pos);
     static void log(const std::string &msg, wxTextCtrl *out);

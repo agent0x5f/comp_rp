@@ -10,12 +10,12 @@
 #include "kmeans.h"
 using namespace std;
 
-MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxSize(1280, 720)) {
+MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxSize(1600, 900)) {
     auto* panel = new wxPanel(this, wxID_ANY); // El panel puede seguir siendo local si no lo vas a modificar después
 
     cargar_archivo = new wxButton(panel, wxID_ANY, "Cargar Archivo", wxPoint(10, 10), wxSize(150, 30));
     cargar_archivo->Bind(wxEVT_BUTTON, &MyFrame::OnOpenExplorer, this);
-    textbox2 = new wxTextCtrl(panel, wxID_ANY, "", wxPoint(10,50), wxSize(120,600), wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL| wxBORDER_SIMPLE);
+    textbox2 = new wxTextCtrl(panel, wxID_ANY, "", wxPoint(10,50), wxSize(120,780), wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL| wxBORDER_SIMPLE);
     textbox2->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
     calcula = new wxButton(panel,wxID_ANY, "Calcula", wxPoint(200, 10));
     calcula->Disable();
@@ -35,9 +35,9 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     checkbox1 = new wxCheckBox(panel,wxID_ANY,"Explica",wxPoint(540,15));
     checkbox1->SetValue(true);
     checkbox1->Bind(wxEVT_CHECKBOX, &MyFrame::OnCheckClick, this);
-    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(140,50), wxSize(370,600),wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL | wxBORDER_SIMPLE);
+    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(140,50), wxSize(670,780),wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL | wxBORDER_SIMPLE);
     consola->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-    canvas = new MyGraphCanvas(panel, wxPoint(520, 50), wxSize(750, 600));
+    canvas = new MyGraphCanvas(panel, wxPoint(820, 50), wxSize(750, 600));
     //exporta = new wxButton(panel, wxID_ANY, "Exporta", wxPoint(1080, 10));
     limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(620, 10));
     limpia->Bind(wxEVT_BUTTON, &MyFrame::OnlimpiaClick, this);
@@ -92,7 +92,7 @@ void MyFrame::OnCalculaClick(wxCommandEvent& event) {
     long semilla_ui = 1;
     textbox1->GetValue().ToLong(&semilla_ui); // Lee el valor del textbox1 y lo convierte a número
     // Preparar GUI
-    SetStatusText("Cálculo en proceso...");
+    SetStatusText("Calculo en proceso...");
     consola->Clear();
     canvas->LimpiarGrafico();
     //Ejecutar el algoritmo seleccionado
@@ -120,7 +120,7 @@ void MyFrame::OnCalculaClick(wxCommandEvent& event) {
     }
     // Ahora sí, cuando haga Refresh, tendrá los datos correctos
     canvas->Refresh();
-    SetStatusText("Cálculo finalizado.");
+    SetStatusText("Calculo finalizado.");
 }
 
 
@@ -150,6 +150,8 @@ void MyFrame::log(string msg, wxTextCtrl *out) {
 
 void MyFrame::OnCheckClick(wxCommandEvent& event) {
     maxmin::verbo = event.IsChecked();
+    chainmap::verbo = event.IsChecked();
+    kmeans::verbo = event.IsChecked();
 }
 
 void MyFrame::OnButton2DClick(wxCommandEvent& event) {
