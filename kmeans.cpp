@@ -11,6 +11,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <set>
 
 using namespace std;
 
@@ -18,6 +19,21 @@ vector<vector<double>> kmeans::matrizDatos;
 vector<int> kmeans::listaIndices;
 bool kmeans::verbo = true;
 int kmeans::num_clases = 0;
+
+void kmeans::iniciar_centroides() {
+    centroides.clear(); //limpiamos
+    std::set<int> indices_usados;
+    //vamos a seleccionar nuestros k centroides de forma random
+    while (indices_usados.size() < (size_t)k) {
+        int elegido = obtenerIndiceAleatorio();
+
+        // insert() devuelve un par, el segundo valor es true si se insertó con éxito/no estaba repetido
+        if (indices_usados.insert(elegido).second) {
+            centroides.push_back(matrizDatos[elegido]);
+        }
+    }
+}
+
 double kmeans::umbral = 0.0;
 int kmeans::seed = 1; //defaults - se lee del GUI
 int kmeans::k = 1; //defaults - se lee del file

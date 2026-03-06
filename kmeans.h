@@ -12,8 +12,10 @@
 
 class kmeans {
 public:
-    static std::vector<std::vector<double>> matrizDatos;
+    static std::vector<std::vector<double>> matrizDatos;  //dataset de entrada
     static void ejecutar(wxTextCtrl *out);
+    static std::vector<std::vector<double>> centroides;  //lista de puntos de n-dimensiones
+    static void iniciar_centroides();
     static double umbral;
     static int num_clases;
     static int k;
