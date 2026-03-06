@@ -19,11 +19,11 @@ public:
     static int k;
     static int seed;
     static std::vector<int> listaIndices;
+    static void log(const std::string &msg, wxTextCtrl *out);
 private:
     static bool verbo;
     static std::string a2decimal(double number);
     static std::string logM(int pos);
-    static void log(const std::string &msg, wxTextCtrl *out);
     static int obtenerIndiceAleatorio();
     static double calcularDistancia(const std::vector<double>& p1, const std::vector<double>& p2);
     static int obtenerCercanoNoVisitado(int indiceActual, wxTextCtrl *out);

@@ -86,17 +86,16 @@ void MyFrame::OnOpenExplorer(const wxCommandEvent& event) {
 }
 
 void MyFrame::OnCalculaClick(wxCommandEvent& event) {
-    // 1. Validar selección
+    //Validar selección
     int algoritmoSeleccionado = choice->GetSelection();
-
-    // 2. Obtener parámetros de la interfaz (Ejemplo: Semilla)
+    //Obtener parámetros de la interfaz (Ejemplo: Semilla)
     long semilla_ui = 1;
-    textbox1->GetValue().ToLong(&semilla_ui); // Lee el valor de tu textbox1 y lo convierte a número
-    // Preparar UI
+    textbox1->GetValue().ToLong(&semilla_ui); // Lee el valor del textbox1 y lo convierte a número
+    // Preparar GUI
     SetStatusText("Cálculo en proceso...");
     consola->Clear();
     canvas->LimpiarGrafico();
-    // 3. Ejecutar el algoritmo correspondiente
+    //Ejecutar el algoritmo seleccionado
     switch (algoritmoSeleccionado) {
         case 0: // Opción: "Max-Min"
             maxmin::seed = (int)semilla_ui;

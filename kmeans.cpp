@@ -19,6 +19,8 @@ vector<int> kmeans::listaIndices;
 bool kmeans::verbo = true;
 int kmeans::num_clases = 0;
 double kmeans::umbral = 0.0;
+int kmeans::seed = 1; //defaults - se lee del GUI
+int kmeans::k = 1; //defaults - se lee del file
 
 string kmeans::a2decimal(double number) {
     stringstream ss;

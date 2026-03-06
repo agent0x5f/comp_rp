@@ -7,7 +7,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+
+#include "chainmap.h"
 #include "maxmin.h"
+#include "kmeans.h"
 
 using namespace std;
 
@@ -43,6 +46,20 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
                     if (salida) maxmin::log("Umbral actualizado: " + std::to_string(maxmin::umbral) + "\n", salida);
                 } catch (...) {
                     if (salida) maxmin::log("Error: Formato de umbral incorrecto en el JSON.\n", salida);
+                }
+            }
+        }
+
+        // Extracción del K - para kmeans
+        size_t posk = contenido.find("\"k\"");
+        if (posk != string::npos) {
+            size_t posDosPuntos = contenido.find(":", posk);
+            if (posDosPuntos != string::npos) {
+                try {
+                    kmeans::k = std::stoi(contenido.substr(posDosPuntos + 1));
+                    if (salida) kmeans::log("K actualizado: " + std::to_string(kmeans::k) + "\n", salida);
+                } catch (...) {
+                    if (salida) kmeans::log("Error: Formato de k incorrecto en el JSON.\n", salida);
                 }
             }
         }
@@ -91,10 +108,9 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
             // Quitamos espacios en blanco accidentales al inicio
             linea.erase(0, linea.find_first_not_of(" \t\r\n"));
 
-            // Comentarios: Si la línea está vacía o empieza con '@', pero NO es el umbral
+            // Comentarios: Si la línea está vacía o empieza con '@', pero NO es un parametro de entrada.
             if (linea.empty()) continue;
-            if (linea[0] == '@' && linea.find("umbral") == string::npos) continue;
-
+            if (linea[0] == '@' && linea.find("umbral") == string::npos && linea.find("k:") == string::npos) continue;
             // Extracción del Umbral: Buscamos la etiqueta "@umbral:"
             if (linea.find("@umbral:") != string::npos) {
                 try {
@@ -104,6 +120,19 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
                     if (salida) maxmin::log("Umbral actualizado: " + std::to_string(maxmin::umbral) + "\n", salida);
                 } catch (...) {
                     if (salida) maxmin::log("Error: Formato de umbral incorrecto en el archivo.\n", salida);
+                }
+                continue; // No agregamos esta línea a la matriz
+            }
+
+            // Extracción del Umbral: Buscamos la etiqueta "@umbral:"
+            if (linea.find("@k:") != string::npos) {
+                try {
+                    size_t posDospuntos = linea.find(":") + 1;
+                    string valorStr = linea.substr(posDospuntos);
+                    kmeans::k = std::stoi(valorStr);
+                    if (salida) maxmin::log("k actualizado: " + std::to_string(kmeans::k) + "\n", salida);
+                } catch (...) {
+                    if (salida) maxmin::log("Error: Formato de k incorrecto en el archivo.\n", salida);
                 }
                 continue; // No agregamos esta línea a la matriz
             }
