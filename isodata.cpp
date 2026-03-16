@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <set>
 #include <random>
+#include <sstream>
 using namespace std;
 
 // Inicialización de variables estáticas
