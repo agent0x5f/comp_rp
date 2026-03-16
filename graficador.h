@@ -32,7 +32,6 @@ private:
     bool modo3D = false; // Estado actual del canvas
     std::vector<std::vector<double>> puntos_plot;
     std::vector<int> clases_plot;
-    int num_clases_plot = 0;
     bool dibujar_centros = false;
 
     // Separamos la lógica para mayor orden

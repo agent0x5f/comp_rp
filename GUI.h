@@ -29,7 +29,6 @@ private:
     wxButton* calcula;
     wxTextCtrl* consola;
     MyGraphCanvas *canvas;
-    wxButton* exporta;
     wxCheckBox * checkbox1;
     wxButton* limpia;
     

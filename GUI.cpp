@@ -10,7 +10,7 @@
 #include "kmeans.h"
 using namespace std;
 
-MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxSize(1600, 900)) {
+MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxSize(1500, 900)) {
     auto* panel = new wxPanel(this, wxID_ANY); // El panel puede seguir siendo local si no lo vas a modificar después
 
     cargar_archivo = new wxButton(panel, wxID_ANY, "Cargar Archivo", wxPoint(10, 10), wxSize(150, 30));
@@ -24,8 +24,10 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     opciones.Add("Max-Min");
     opciones.Add("Chain-map");
     opciones.Add("k-Means");
+    opciones.Add("ISODATA");
+    opciones.Add("Db-Scan");
     //opciones.Add("soon TM");
-    choice = new wxChoice(panel, wxID_ANY, wxPoint(280, 10), wxDefaultSize, opciones);
+    choice = new wxChoice(panel, wxID_ANY, wxPoint(300, 10), wxDefaultSize, opciones);
     choice->Bind(wxEVT_CHOICE, &MyFrame::OnAlgoritmoSelect, this);
     choice->SetSelection(0);//default a max-min
 
@@ -35,9 +37,9 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     checkbox1 = new wxCheckBox(panel,wxID_ANY,"Explica",wxPoint(540,15));
     checkbox1->SetValue(true);
     checkbox1->Bind(wxEVT_CHECKBOX, &MyFrame::OnCheckClick, this);
-    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(140,50), wxSize(670,780),wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL | wxBORDER_SIMPLE);
+    consola = new wxTextCtrl(panel,wxID_ANY,"", wxPoint(140,50), wxSize(570,780),wxTE_READONLY | wxTE_MULTILINE | wxHSCROLL | wxBORDER_SIMPLE);
     consola->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-    canvas = new MyGraphCanvas(panel, wxPoint(820, 50), wxSize(750, 600));
+    canvas = new MyGraphCanvas(panel, wxPoint(720, 50), wxSize(750, 600));
     //exporta = new wxButton(panel, wxID_ANY, "Exporta", wxPoint(1080, 10));
     limpia = new wxButton(panel, wxID_ANY, "Limpia", wxPoint(620, 10));
     limpia->Bind(wxEVT_BUTTON, &MyFrame::OnlimpiaClick, this);

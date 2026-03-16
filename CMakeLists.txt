@@ -33,6 +33,8 @@ set(SOURCE_FILES
         resource.rc
         kmeans.cpp
         kmeans.h
+        isodata.cpp
+        isodata.h
 )
 
 # --- 5. CREAR EL EJECUTABLE ---
