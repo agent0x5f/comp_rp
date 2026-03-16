@@ -163,30 +163,16 @@ int kmeans::obtenerCercanoNoVisitado(int indiceActual, wxTextCtrl *out) {
     return mas_cercano;
 }
 
-// Función principal que ejecuta el algoritmo
-void kmeans::ejecutar(wxTextCtrl* consola) {
-    if (matrizDatos.empty() || k <= 0) {
-        if (consola) consola->AppendText("Error: Datos vacíos o K inválido.\n");
-        return;
-    }
-    if (k > (int)matrizDatos.size()) {
-        k = matrizDatos.size(); // Evitamos pedir más clústeres que puntos
-        if (consola) consola->AppendText("Nota: K mayor al número de puntos. Ajustando a " + std::to_string(k) + "\n");
-    }
-    //si vamos bien
-    listaIndices.assign(matrizDatos.size(), -1);
-    if (consola) consola->AppendText("Iniciando k-Means con K: " + std::to_string(k) + "...\n");
-
-    iniciar_centroides();
+//Bucle principal de asignación y recálculo
+void kmeans::ciclo_principal(wxTextCtrl* consola) {
     bool convergencia = false;
     int iteracion = 0;
-    int max_iteraciones = 100; // Límite de cansancio -wikipedia no lo tiene.
+    int max_iteraciones = 100; // Límite de cansancio
 
     // main loop
     while (!convergencia && iteracion < max_iteraciones) {
         iteracion++;
-        consola->AppendText("Iteracion " + std::to_string(iteracion) + "...\n");
-        // Guardamos una copia de cómo estaban los grupos en iter pasada
+        if (consola) consola->AppendText("Iteracion " + std::to_string(iteracion) + "...\n");
 
         if (verbo && consola) {
             for (int c = 0; c < k; ++c) {
@@ -195,19 +181,58 @@ void kmeans::ejecutar(wxTextCtrl* consola) {
         }
 
         std::vector<int> indices_anteriores = listaIndices;
-        asignacion(consola);  //Asignar cada punto a su centroide más cercano
+        asignacion(consola);  // Asignar cada punto a su centroide más cercano
 
-        // Si la lista de índices actual es exactamente igual a la anterior, fin.
+        // Comprobación de convergencia
         if (listaIndices == indices_anteriores) {
             convergencia = true;
-            consola->AppendText("Convergencia alcanzada en la iter: " + std::to_string(iteracion) + "\n");
-            break; // Rompemos el ciclo while
+            if (consola) consola->AppendText("Convergencia alcanzada en la iter: " + std::to_string(iteracion) + "\n");
+            break;
         }
-        recalcula_centroides(); //Si hubo cambios, recalculamos los centroides para la siguiente ronda
+        recalcula_centroides(); // Si hubo cambios, recalculamos los centroides
     }
-
-    if (!convergencia && consola) { //log de terminación
+    if (!convergencia && consola) {
         consola->AppendText("Fin por límite de iteraciones (" + std::to_string(max_iteraciones) + ").\n");
     }
-    if (consola) consola->AppendText("k-Means finalizado con exito.\n");
+    if (consola) consola->AppendText("Proceso k-Means finalizado con exito.\n");
+}
+
+// Semillas random
+void kmeans::ejecutar(wxTextCtrl* consola) {
+    if (matrizDatos.empty() || k <= 0) {
+        if (consola) consola->AppendText("Error: Datos vacíos o K inválido.\n");
+        return;
+    }
+    if (k > (int)matrizDatos.size()) {
+        k = matrizDatos.size();
+        if (consola) consola->AppendText("Nota: K mayor al número de puntos. Ajustando a " + std::to_string(k) + "\n");
+    }
+
+    listaIndices.assign(matrizDatos.size(), -1);
+    if (consola) consola->AppendText("Iniciando k-Means con K aleatorios: " + std::to_string(k) + "...\n");
+
+    iniciar_centroides();
+    ciclo_principal(consola);
+}
+
+// Semillas dadas desde fuera - ISODATA
+void kmeans::ejecutar(const std::vector<std::vector<double>>& semillas_isodata, wxTextCtrl* consola) {
+    if (matrizDatos.empty() || semillas_isodata.empty()) {
+        if (consola) consola->AppendText("Error: Datos vacíos o semillas de ISODATA inválidas.\n");
+        return;
+    }
+
+    k = semillas_isodata.size();
+    centroides = semillas_isodata;
+
+    if (k > (int)matrizDatos.size()) {
+        k = matrizDatos.size();
+        centroides.resize(k); // Recortamos por seguridad
+        if (consola) consola->AppendText("Nota: K mayor al número de puntos. Ajustando a " + std::to_string(k) + "\n");
+    }
+
+    listaIndices.assign(matrizDatos.size(), -1);
+    if (consola) consola->AppendText("Iniciando k-Means con " + std::to_string(k) + " semillas de ISODATA...\n");
+
+    ciclo_principal(consola);
 }

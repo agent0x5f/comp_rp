@@ -14,6 +14,9 @@ class kmeans {
 public:
     static std::vector<std::vector<double>> matrizDatos;  //dataset de entrada
     static void ejecutar(wxTextCtrl *out);
+    //sobrecarga para el ISODATA
+    static void ejecutar(const std::vector<std::vector<double>>& semillas_isodata, wxTextCtrl* consola = nullptr);
+    static void ciclo_principal(wxTextCtrl* consola);
     static void iniciar_centroides();
     static void asignacion(wxTextCtrl* consola);
     static void recalcula_centroides();
