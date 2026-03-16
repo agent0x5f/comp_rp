@@ -8,6 +8,7 @@
 #include "io.h"
 #include "chainmap.h"
 #include "kmeans.h"
+#include "isodata.h"
 using namespace std;
 
 MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxSize(1500, 900)) {
@@ -119,6 +120,15 @@ void MyFrame::OnCalculaClick(wxCommandEvent& event) {
             kmeans::ejecutar(consola);
             canvas->SetDatos(kmeans::matrizDatos, kmeans::listaIndices, false);
             break;
+        case 3: // Opción: "ISODATA"
+            isodata::seed = (int)semilla_ui;
+            // Cargamos los datos originales leídos del archivo
+            isodata::matrizDatos = maxmin::matrizDatos;
+            // Ejecutamos (esto hará las divisiones/fusiones y llamará a kmeans internamente)
+            isodata::ejecutar(consola);
+            // Graficamos usando los índices finales generados por k-Means en el último paso
+            canvas->SetDatos(kmeans::matrizDatos, kmeans::listaIndices, false);
+            break;
     }
     // Ahora sí, cuando haga Refresh, tendrá los datos correctos
     canvas->Refresh();
@@ -154,6 +164,7 @@ void MyFrame::OnCheckClick(wxCommandEvent& event) {
     maxmin::verbo = event.IsChecked();
     chainmap::verbo = event.IsChecked();
     kmeans::verbo = event.IsChecked();
+    isodata::verbo = event.IsChecked();
 }
 
 void MyFrame::OnButton2DClick(wxCommandEvent& event) {

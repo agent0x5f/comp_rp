@@ -11,6 +11,7 @@
 #include "chainmap.h"
 #include "maxmin.h"
 #include "kmeans.h"
+#include "isodata.h"
 
 using namespace std;
 
@@ -50,17 +51,73 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
             }
         }
 
-        // Extracción del K - para kmeans
+        // Extracción del K - Sincronizado para kmeans e isodata
         size_t posk = contenido.find("\"k\"");
         if (posk != string::npos) {
             size_t posDosPuntos = contenido.find(":", posk);
             if (posDosPuntos != string::npos) {
                 try {
                     kmeans::k = std::stoi(contenido.substr(posDosPuntos + 1));
-                    if (salida) kmeans::log("K actualizado: " + std::to_string(kmeans::k) + "\n", salida);
+                    isodata::k_esperado = kmeans::k;
+                    if (salida) maxmin::log("K actualizado: " + std::to_string(kmeans::k) + "\n", salida);
                 } catch (...) {
-                    if (salida) kmeans::log("Error: Formato de k incorrecto en el JSON.\n", salida);
+                    if (salida) maxmin::log("Error: Formato de k incorrecto en el JSON.\n", salida);
                 }
+            }
+        }
+
+        // Extracción de tn
+        size_t postn = contenido.find("\"tn\"");
+        if (postn != string::npos) {
+            size_t posDosPuntos = contenido.find(":", postn);
+            if (posDosPuntos != string::npos) {
+                try {
+                    isodata::theta_n = std::stoi(contenido.substr(posDosPuntos + 1));
+                } catch (...) { }
+            }
+        }
+
+        // Extracción de ts
+        size_t posts = contenido.find("\"ts\"");
+        if (posts != string::npos) {
+            size_t posDosPuntos = contenido.find(":", posts);
+            if (posDosPuntos != string::npos) {
+                try {
+                    isodata::theta_s = std::stod(contenido.substr(posDosPuntos + 1));
+                } catch (...) { }
+            }
+        }
+
+        // Extracción de tc
+        size_t postc = contenido.find("\"tc\"");
+        if (postc != string::npos) {
+            size_t posDosPuntos = contenido.find(":", postc);
+            if (posDosPuntos != string::npos) {
+                try {
+                    isodata::theta_c = std::stod(contenido.substr(posDosPuntos + 1));
+                } catch (...) { }
+            }
+        }
+
+        // Extracción de max_pares
+        size_t posmaxpares = contenido.find("\"max_pares\"");
+        if (posmaxpares != string::npos) {
+            size_t posDosPuntos = contenido.find(":", posmaxpares);
+            if (posDosPuntos != string::npos) {
+                try {
+                    isodata::max_pares = std::stoi(contenido.substr(posDosPuntos + 1));
+                } catch (...) { }
+            }
+        }
+
+        // Extracción de iteraciones
+        size_t positer = contenido.find("\"iter\"");
+        if (positer != string::npos) {
+            size_t posDosPuntos = contenido.find(":", positer);
+            if (posDosPuntos != string::npos) {
+                try {
+                    isodata::iteraciones = std::stoi(contenido.substr(posDosPuntos + 1));
+                } catch (...) { }
             }
         }
 
@@ -108,36 +165,48 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
             // Quitamos espacios en blanco accidentales al inicio
             linea.erase(0, linea.find_first_not_of(" \t\r\n"));
 
-            // Comentarios: Si la línea está vacía o empieza con '@', pero NO es un parametro de entrada.
             if (linea.empty()) continue;
-            if (linea[0] == '@' && linea.find("umbral") == string::npos && linea.find("k:") == string::npos) continue;
-            // Extracción del Umbral: Buscamos la etiqueta "@umbral:"
-            if (linea.find("@umbral:") != string::npos) {
+
+            // parametros
+            if (linea[0] == '@') {
                 try {
                     size_t posDospuntos = linea.find(":") + 1;
+                    if (posDospuntos == 0) continue; // Si no hay ':', es un comentario puro (como @comentario)
+
                     string valorStr = linea.substr(posDospuntos);
-                    maxmin::umbral = std::stod(valorStr);
-                    if (salida) maxmin::log("Umbral actualizado: " + std::to_string(maxmin::umbral) + "\n", salida);
+
+                    if (linea.find("@umbral:") != string::npos) {
+                        maxmin::umbral = std::stod(valorStr);
+                        if (salida) maxmin::log("Umbral actualizado: " + std::to_string(maxmin::umbral) + "\n", salida);
+                    }
+                    else if (linea.find("@k:") != string::npos) {
+                        int k_val = std::stoi(valorStr);
+                        kmeans::k = k_val;
+                        isodata::k_esperado = k_val; // Sincronizamos ambos
+                        if (salida) maxmin::log("k actualizado: " + std::to_string(k_val) + "\n", salida);
+                    }
+                    else if (linea.find("@tn:") != string::npos) {
+                        isodata::theta_n = std::stoi(valorStr);
+                    }
+                    else if (linea.find("@ts:") != string::npos) {
+                        isodata::theta_s = std::stod(valorStr);
+                    }
+                    else if (linea.find("@tc:") != string::npos) {
+                        isodata::theta_c = std::stod(valorStr);
+                    }
+                    else if (linea.find("@max_pares:") != string::npos) {
+                        isodata::max_pares = std::stoi(valorStr);
+                    }
+                    else if (linea.find("@iter:") != string::npos) {
+                        isodata::iteraciones = std::stoi(valorStr);
+                    }
                 } catch (...) {
-                    if (salida) maxmin::log("Error: Formato de umbral incorrecto en el archivo.\n", salida);
+                    if (salida) maxmin::log("Error: Formato incorrecto en parámetro: " + linea + "\n", salida);
                 }
-                continue; // No agregamos esta línea a la matriz
+                continue; // Saltamos a la siguiente línea porque esto no es una coordenada
             }
 
-            // Extracción del Umbral: Buscamos la etiqueta "@umbral:"
-            if (linea.find("@k:") != string::npos) {
-                try {
-                    size_t posDospuntos = linea.find(":") + 1;
-                    string valorStr = linea.substr(posDospuntos);
-                    kmeans::k = std::stoi(valorStr);
-                    if (salida) maxmin::log("k actualizado: " + std::to_string(kmeans::k) + "\n", salida);
-                } catch (...) {
-                    if (salida) maxmin::log("Error: Formato de k incorrecto en el archivo.\n", salida);
-                }
-                continue; // No agregamos esta línea a la matriz
-            }
-
-            // Lectura de coordenadas (X, Y)
+            // --- lectura de cordenadas (X, Y, Z...) ---
             stringstream ss(linea);
             string valor;
             vector<double> filaActual;
@@ -152,6 +221,7 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
                 maxmin::matrizDatos.push_back(filaActual);
             }
         }
+
     }
 
     // Inicializar listaIndices con -1 según el tamaño de los datos leídos
