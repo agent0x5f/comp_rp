@@ -9,6 +9,7 @@
 #include "chainmap.h"
 #include "kmeans.h"
 #include "isodata.h"
+#include "dbscan.h"
 using namespace std;
 
 MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxSize(1500, 900)) {
@@ -129,6 +130,14 @@ void MyFrame::OnCalculaClick(wxCommandEvent& event) {
             // Graficamos usando los índices finales generados por k-Means en el último paso
             canvas->SetDatos(kmeans::matrizDatos, kmeans::listaIndices, false);
             break;
+        case 4: // Opción: "Db-Scan"
+            // Le pasamos los datos originales
+            dbscan::matrizDatos = maxmin::matrizDatos;
+            // Ejecutamos la búsqueda de densidad
+            dbscan::ejecutar(consola);
+            // Mandamos los resultados (incluyendo el ruido en -2) al graficador
+            canvas->SetDatos(dbscan::matrizDatos, dbscan::listaIndices, false);
+            break;
     }
     // Ahora sí, cuando haga Refresh, tendrá los datos correctos
     canvas->Refresh();
@@ -165,6 +174,7 @@ void MyFrame::OnCheckClick(wxCommandEvent& event) {
     chainmap::verbo = event.IsChecked();
     kmeans::verbo = event.IsChecked();
     isodata::verbo = event.IsChecked();
+    dbscan::verbo = event.IsChecked();
 }
 
 void MyFrame::OnButton2DClick(wxCommandEvent& event) {

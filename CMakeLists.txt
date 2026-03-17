@@ -35,6 +35,8 @@ set(SOURCE_FILES
         kmeans.h
         isodata.cpp
         isodata.h
+        dbscan.cpp
+        dbscan.h
 )
 
 # --- 5. CREAR EL EJECUTABLE ---

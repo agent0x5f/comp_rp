@@ -1,0 +1,11 @@
+@comentario dataset de prueba para dbscan
+@epsilon: 2.5
+@minPts: 3
+1,1,1
+1,2,1
+2,1,1
+2,2,1
+10,10,10
+10,11,10
+11,10,10
+20,20,20

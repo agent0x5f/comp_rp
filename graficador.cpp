@@ -142,19 +142,23 @@ void MyGraphCanvas::Dibujar2D(wxGraphicsContext* gc, int w, int h) {
     }
 
     // --- SECCIÓN DE PUNTOS ---
-    for (size_t i = 0; i < puntos_plot.size(); ++i) {
+for (size_t i = 0; i < puntos_plot.size(); ++i) {
         if (puntos_plot[i].size() >= 2) {
             int clase = (i < clases_plot.size()) ? clases_plot[i] : -1;
 
             double posX = toScreenX(puntos_plot[i][0]);
             double posY = toScreenY(puntos_plot[i][1]);
+            wxColour colorPunto;
+            if (clase == -1) colorPunto = paleta[0];
+            else if (clase == -2) colorPunto = wxColour(30, 30, 30); // Ruido (Gris casi negro)
+            else colorPunto = paleta[(clase + 1) % paleta.size()];
 
-            gc->SetBrush(wxBrush(clase == -1 ? paleta[0] : paleta[(clase + 1) % paleta.size()]));
-            gc->SetPen(wxPen(clase == -1 ? paleta[0] : paleta[(clase + 1) % paleta.size()], 1));
+            gc->SetBrush(wxBrush(colorPunto));
+            gc->SetPen(wxPen(colorPunto, 1));
             gc->DrawEllipse(posX - 9, posY - 9, 18, 18);
 
             // Verificación segura para los centros (solo si es Max-Min)
-            if (dibujar_centros && clase != -1) {
+            if (dibujar_centros && clase != -1 && clase != -2) {
                 if (i < maxmin::matrizDistancias.size() && clase < (int)maxmin::matrizDistancias[i].size()) {
                     if (maxmin::matrizDistancias[i][clase] == 0.0f) {
                         gc->SetFont(wxFontInfo(14).Bold(), *wxBLACK);
@@ -188,6 +192,14 @@ void MyGraphCanvas::Dibujar2D(wxGraphicsContext* gc, int w, int h) {
     gc->DrawEllipse(leyendaX, leyendaY, 12, 12);
     gc->DrawText("Sin asignar", leyendaX + 20, leyendaY - 1);
     leyendaY += 22;
+
+    // Solo se dibuja si existe ruido (-2) en los datos
+    if (std::find(clases_plot.begin(), clases_plot.end(), -2) != clases_plot.end()) {
+        gc->SetBrush(wxBrush(wxColour(30, 30, 30)));
+        gc->DrawEllipse(leyendaX, leyendaY, 12, 12);
+        gc->DrawText("Ruido", leyendaX + 20, leyendaY - 1);
+        leyendaY += 22;
+    }
 
     for (int i = 0; i <= maxClaseEncontrada; ++i) {
         wxColour colorGrupo = paleta[(i + 1) % paleta.size()];
@@ -288,7 +300,7 @@ void MyGraphCanvas::Dibujar3D(wxGraphicsContext* gc, int w, int h) {
     gc->StrokeLine(origenX, origenY, finX, finY);
     gc->DrawText("Z", finX - 15, finY - 15);
 
-    if (!puntos_plot.empty()) {
+   if (!puntos_plot.empty()) {
         gc->SetPen(wxPen(wxColour(180, 180, 180), 1, wxPENSTYLE_DOT));
         double radioPunto = 5.0;
 
@@ -298,7 +310,11 @@ void MyGraphCanvas::Dibujar3D(wxGraphicsContext* gc, int w, int h) {
             double zMat = puntos_plot[i].size() > 2 ? puntos_plot[i][2] : 0;
 
             int clase = (i < clases_plot.size()) ? clases_plot[i] : -1;
-            wxColour colorGrupo = (clase == -1) ? paleta[0] : paleta[(clase + 1) % paleta.size()];
+
+            wxColour colorGrupo;
+            if (clase == -1) colorGrupo = paleta[0];
+            else if (clase == -2) colorGrupo = wxColour(30, 30, 30); // Ruido
+            else colorGrupo = paleta[(clase + 1) % paleta.size()];
 
             double px, py, pisoX, pisoY;
             proyectar(xMat, yMat, zMat, px, py);
@@ -328,6 +344,14 @@ void MyGraphCanvas::Dibujar3D(wxGraphicsContext* gc, int w, int h) {
     gc->DrawEllipse(leyendaX, leyendaY, 12, 12);
     gc->DrawText("Sin asignar", leyendaX + 20, leyendaY - 1);
     leyendaY += 22;
+
+    // Solo se dibuja si existe ruido (-2) en los datos
+    if (std::find(clases_plot.begin(), clases_plot.end(), -2) != clases_plot.end()) {
+        gc->SetBrush(wxBrush(wxColour(30, 30, 30)));
+        gc->DrawEllipse(leyendaX, leyendaY, 12, 12);
+        gc->DrawText("Ruido", leyendaX + 20, leyendaY - 1);
+        leyendaY += 22;
+    }
 
     for (int i = 0; i <= maxClaseEncontrada; ++i) {
         gc->SetBrush(wxBrush(paleta[(i + 1) % paleta.size()]));

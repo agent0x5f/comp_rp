@@ -12,6 +12,7 @@
 #include "maxmin.h"
 #include "kmeans.h"
 #include "isodata.h"
+#include "dbscan.h"
 
 using namespace std;
 
@@ -121,6 +122,28 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
             }
         }
 
+        // Extracción de epsilon para DBSCAN
+        size_t poseps = contenido.find("\"epsilon\"");
+        if (poseps != string::npos) {
+            size_t posDosPuntos = contenido.find(":", poseps);
+            if (posDosPuntos != string::npos) {
+                try {
+                    dbscan::epsilon = std::stod(contenido.substr(posDosPuntos + 1));
+                } catch (...) { }
+            }
+        }
+
+        // Extracción de minPts para DBSCAN
+        size_t posminpts = contenido.find("\"minPts\"");
+        if (posminpts != string::npos) {
+            size_t posDosPuntos = contenido.find(":", posminpts);
+            if (posDosPuntos != string::npos) {
+                try {
+                    dbscan::minPts = std::stoi(contenido.substr(posDosPuntos + 1));
+                } catch (...) { }
+            }
+        }
+
         // Extracción de Datos
         size_t posDatos = contenido.find("\"datos\"");
         if (posDatos != string::npos) {
@@ -199,6 +222,12 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
                     }
                     else if (linea.find("@iter:") != string::npos) {
                         isodata::iteraciones = std::stoi(valorStr);
+                    }
+                    else if (linea.find("@epsilon:") != string::npos) {
+                        dbscan::epsilon = std::stod(valorStr);
+                    }
+                    else if (linea.find("@minPts:") != string::npos) {
+                        dbscan::minPts = std::stoi(valorStr);
                     }
                 } catch (...) {
                     if (salida) maxmin::log("Error: Formato incorrecto en parámetro: " + linea + "\n", salida);
