@@ -7,6 +7,8 @@
 
 class MyGraphCanvas : public wxPanel {
 public:
+    std::vector<std::vector<double>> puntos_plot;
+    std::vector<int> clases_plot;
     MyGraphCanvas(wxWindow* parent, wxPoint pos, wxSize size);
     void SetDatos(const std::vector<std::vector<double>>& puntos,
                    const std::vector<int>& clases,
@@ -30,8 +32,6 @@ public:
 
 private:
     bool modo3D = false; // Estado actual del canvas
-    std::vector<std::vector<double>> puntos_plot;
-    std::vector<int> clases_plot;
     bool dibujar_centros = false;
 
     // Separamos la lógica para mayor orden

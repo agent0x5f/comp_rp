@@ -1,6 +1,6 @@
 @comentario dataset de estres para DBSCAN con 100 puntos (3 clusters y mucho ruido)
-@eps: 4.5
-@mp: 4
+@epsilon: 4.5
+@minPts: 4
 32.63,40.76,3.26
 42.62,41.55,8.03
 42.71,38.92,11.17

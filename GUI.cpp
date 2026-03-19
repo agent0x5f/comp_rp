@@ -10,6 +10,7 @@
 #include "kmeans.h"
 #include "isodata.h"
 #include "dbscan.h"
+#include <wx/filedlg.h>
 using namespace std;
 
 MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxSize(1500, 900)) {
@@ -50,6 +51,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
     grafica2d->Bind(wxEVT_BUTTON,&MyFrame::OnButton2DClick, this);
     grafica3d = new wxButton(panel, wxID_ANY, "Grafica 3D", wxPoint(820, 10));
     grafica3d->Bind(wxEVT_BUTTON,&MyFrame::OnButton3DClick, this);
+    guardar = new wxButton(panel, wxID_ANY, "Guardar", wxPoint(920, 10));
+    guardar->Bind(wxEVT_BUTTON,&MyFrame::OnGuardarClick, this);
 }
 
 void MyFrame::OnAlgoritmoSelect(wxCommandEvent& event) {
@@ -151,6 +154,77 @@ void MyFrame::OnlimpiaClick(wxCommandEvent& event) {
     textbox2->Clear();
     SetStatusText("Interfaz y gráficos limpiados.");
 }
+
+void MyFrame::OnGuardarClick(wxCommandEvent& event) {
+    if (canvas->puntos_plot.empty()) {
+        wxMessageBox("No hay datos calculados para guardar.", "Error", wxICON_ERROR);
+        return;
+    }
+
+    // Abrimos la ventana de diálogo "Guardar como..."
+    wxFileDialog saveFileDialog(this, "Guardar resultados", "", "resultados_algoritmo.csv",
+                                "Archivos CSV (*.csv)|*.csv|Archivos de texto (*.txt)|*.txt",
+                                wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    // Si cancelamos, no hacemos nada
+    if (saveFileDialog.ShowModal() == wxID_CANCEL) {
+        return;
+    }
+
+    // Preparamos el archivo para escribir
+    std::ofstream archivoSalida(saveFileDialog.GetPath().ToStdString());
+
+    if (!archivoSalida.is_open()) {
+        wxLogError("No se pudo crear el archivo.");
+        return;
+    }
+
+    // Encabezado
+    archivoSalida << "@Archivo generado con los datos ya clasificados\n";
+
+    int dimensiones = canvas->puntos_plot[0].size();
+
+    if (dimensiones == 2) {
+        archivoSalida << "x,y,clase\n";
+    } else if (dimensiones == 3) {
+        archivoSalida << "x,y,z,clase\n";
+    } else {
+        // Si el dataset tiene 4 o más dimensiones (Hiperespacio)
+        for (int d = 1; d <= dimensiones; ++d) {
+            archivoSalida << "dim" << d << ",";
+        }
+        archivoSalida << "clase\n";
+    }
+
+    // Recorremos los datos y los escribimos
+    for (size_t i = 0; i < canvas->puntos_plot.size(); ++i) {
+        // Escribimos las coordenadas (X, Y, Z...)
+        for (size_t d = 0; d < canvas->puntos_plot[i].size(); ++d) {
+            archivoSalida << canvas->puntos_plot[i][d] << ",";
+        }
+
+        // Escribimos el grupo al final de la línea
+        int clase;
+        // Verificamos que el índice i exista en la lista de clases
+        if (i < canvas->clases_plot.size()) {
+            clase = canvas->clases_plot[i]; // Si existe, le asignamos su grupo real
+        } else {
+            clase = -1; // Si por alguna razón no existe, lo marcamos como -1
+        }
+
+        // el ruido de DBSCAN se guarda con una etiqueta
+        if (clase == -2) {
+            archivoSalida << "Ruido\n";
+        } else if (clase == -1) {
+            archivoSalida << "Sin_Asignar\n";
+        } else {
+            archivoSalida << "Grupo_" << clase << "\n";
+        }
+    }
+    archivoSalida.close();
+    wxMessageBox("Archivo guardado exitosamente en:\n" + saveFileDialog.GetPath(), "Éxito", wxICON_INFORMATION);
+}
+
 void MyFrame::OnEscritura(wxCommandEvent& event){
     // Obtenemos el texto del textbox que disparó el evento
     wxString texto = event.GetString();

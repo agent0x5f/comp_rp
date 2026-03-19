@@ -13,7 +13,8 @@ public:
     static void log(std::string msg, wxTextCtrl *out);
     void OnCheckClick(wxCommandEvent& event);
     void OnlimpiaClick(wxCommandEvent& event);
-    
+
+    void OnGuardarClick(wxCommandEvent &event);
     // Declaración de las nuevas funciones para los botones 2D y 3D
     void OnButton2DClick(wxCommandEvent& event);
     void OnButton3DClick(wxCommandEvent& event);
@@ -31,8 +32,7 @@ private:
     MyGraphCanvas *canvas;
     wxCheckBox * checkbox1;
     wxButton* limpia;
-    
-    // Declaración de los nuevos botones
+    wxButton* guardar;
     wxButton* grafica2d;
     wxButton* grafica3d;
     wxChoice * choice;
