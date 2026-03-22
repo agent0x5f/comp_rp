@@ -9,6 +9,8 @@
 
 class io {
     public:
+    bool static esNumerico(const std::string &str);
+
     static std::string procesarEntrada(const std::string& path, wxTextCtrl* salida = nullptr);
 
 };

@@ -18,6 +18,8 @@ int maxmin::seed = 1; //semilla para el random
 double maxmin::umbral = 0.5; //parametro del min-max
 double maxmin::dist_mayor = 0; //elemento mayor distancia
 vector<vector<double>> maxmin::matrizDistancias;  //distancias de cada elemento con respecto al resto -equivale a columnas del excel
+vector<vector<string>> maxmin::matrizDatosCat;
+bool maxmin::esCategorico = false;
 double dist_mayor_inicial = 0;
 int limite = 0;//iteraciones de creacion de clases, solo para debug/limitar casos de error
 int maxmin::num_clases = 0;

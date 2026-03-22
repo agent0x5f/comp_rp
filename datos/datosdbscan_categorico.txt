@@ -1,0 +1,23 @@
+@comentario Dataset Categorico de 20 Perfiles para DBSCAN
+@epsilon: 0.30
+@minPts: 3
+IT,Linux,IDE,Pro
+IT,Linux,IDE,Pro
+IT,Mac,IDE,Pro
+IT,Linux,Terminal,Pro
+IT,Linux,IDE,Basic
+IT,Windows,IDE,Pro
+Art,Mac,Adobe,Pro
+Art,Mac,Adobe,Pro
+Art,Mac,Figma,Pro
+Art,Windows,Adobe,Pro
+Art,Mac,Adobe,Basic
+Art,Mac,Adobe,Pro
+HR,Windows,Office,Basic
+HR,Windows,Office,Basic
+HR,Windows,Office,Free
+HR,Mac,Office,Basic
+HR,Windows,Web,Basic
+CEO,Mac,Dashboard,Ultra
+Intern,Linux,Web,Free
+Security,Linux,Scripts,Pro

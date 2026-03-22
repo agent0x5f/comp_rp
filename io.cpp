@@ -16,6 +16,17 @@
 
 using namespace std;
 
+// Función auxiliar para detectar si un texto es un numero
+bool io::esNumerico(const string& str) {
+    try {
+        size_t pos;
+        stod(str, &pos);
+        return pos == str.length(); // Es número solo si la conversión usó toda la entrada
+    } catch (...) {
+        return false; // Si falla, es una palabra (ej. "Rojo")
+    }
+}
+
 string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
     std::ifstream archivo(path);
     if (!archivo.is_open()) return "Error al abrir";
@@ -183,6 +194,9 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
 
         stringstream ssArchivo(contenido);
         string linea;
+        bool tipoDetectado = false;
+        maxmin::esCategorico = false;
+        maxmin::matrizDatosCat.clear();
 
         while (getline(ssArchivo, linea)) {
             // Quitamos espacios en blanco accidentales al inicio
@@ -238,23 +252,48 @@ string io::procesarEntrada(string const& path, wxTextCtrl* salida) {
             // --- lectura de cordenadas (X, Y, Z...) ---
             stringstream ss(linea);
             string valor;
-            vector<double> filaActual;
-
+            vector<string> tokens;
             while (getline(ss, valor, ',')) {
-                try {
-                    filaActual.push_back(stod(valor));
-                } catch (...) { /* Ignorar basura */ }
+                // Limpiamos espacios extra en cada palabra/número
+                valor.erase(0, valor.find_first_not_of(" \t\r\n"));
+                valor.erase(valor.find_last_not_of(" \t\r\n") + 1);
+
+                if (!valor.empty()) tokens.push_back(valor);
             }
 
-            if (!filaActual.empty()) {
-                maxmin::matrizDatos.push_back(filaActual);
+            if (tokens.empty()) continue;
+
+            //Solo revisamos la primera fila de datos del archivo
+            if (!tipoDetectado) {
+                maxmin::esCategorico = !esNumerico(tokens[0]);
+                tipoDetectado = true;
+
+                if (salida && maxmin::esCategorico) {
+                    maxmin::log("Tipo de dato detectado: Categorico\n", salida);
+                } else if (salida) {
+                    maxmin::log("Tipo de dato detectado: Numerico\n", salida);
+                }
+            }
+
+            // Guardamos en la matriz correspondiente
+            if (maxmin::esCategorico) {
+                maxmin::matrizDatosCat.push_back(tokens);
+            } else {
+                vector<double> filaActual;
+                for (const auto& t : tokens) {
+                    try {
+                        filaActual.push_back(stod(t));
+                    } catch (...) { /* Ignorar basura en números */ }
+                }
+                if (!filaActual.empty()) maxmin::matrizDatos.push_back(filaActual);
             }
         }
 
     }
 
     // Inicializar listaIndices con -1 según el tamaño de los datos leídos
-    maxmin::listaIndices.assign(maxmin::matrizDatos.size(), -1);
+    size_t totalDatos = maxmin::esCategorico ? maxmin::matrizDatosCat.size() : maxmin::matrizDatos.size();
+    maxmin::listaIndices.assign(totalDatos, -1);
 
     std::filesystem::path p(path);
     return p.filename().string();

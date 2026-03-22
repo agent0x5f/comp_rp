@@ -56,7 +56,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Programa", wxPoint(50, 50), wxS
 }
 
 void MyFrame::OnAlgoritmoSelect(wxCommandEvent& event) {
-    if (choice->GetSelection() != wxNOT_FOUND && !maxmin::matrizDatos.empty()) {
+    bool hayDatos = !maxmin::matrizDatos.empty() || !maxmin::matrizDatosCat.empty();
+    if (choice->GetSelection() != wxNOT_FOUND && hayDatos) {
         calcula->Enable();
     } else {
         calcula->Disable();
@@ -84,7 +85,8 @@ void MyFrame::OnOpenExplorer(const wxCommandEvent& event) {
         textbox2->SetValue(datos);
         log("Datos cargados\n",consola);
         canvas->Refresh();
-        if (choice->GetSelection() != wxNOT_FOUND && !maxmin::matrizDatos.empty()) {
+        bool hayDatos = !maxmin::matrizDatos.empty() || !maxmin::matrizDatosCat.empty();
+        if (choice->GetSelection() != wxNOT_FOUND && hayDatos) {
             calcula->Enable();
         } else {
             calcula->Disable();
@@ -134,12 +136,19 @@ void MyFrame::OnCalculaClick(wxCommandEvent& event) {
             canvas->SetDatos(kmeans::matrizDatos, kmeans::listaIndices, false);
             break;
         case 4: // Opción: "Db-Scan"
-            // Le pasamos los datos originales
-            dbscan::matrizDatos = maxmin::matrizDatos;
-            // Ejecutamos la búsqueda de densidad
-            dbscan::ejecutar(consola);
-            // Mandamos los resultados (incluyendo el ruido en -2) al graficador
-            canvas->SetDatos(dbscan::matrizDatos, dbscan::listaIndices, false);
+            if (maxmin::esCategorico) {
+                // Ruteo para datos de texto
+                dbscan::matrizDatosCat = maxmin::matrizDatosCat; // Asumiendo que creaste esta variable en dbscan
+                dbscan::ejecutarCat(consola); // O la función sobrecargada que hayas hecho para categorías
+
+                log("ATENCION: Los datos categoricos no se pueden graficar en 3D.\n", consola);
+                log("Usa el boton 'Guardar' para exportar los perfiles con su grupo asignado.\n", consola);
+            } else {
+                // Ruteo clásico para números
+                dbscan::matrizDatos = maxmin::matrizDatos;
+                dbscan::ejecutar(consola);
+                canvas->SetDatos(dbscan::matrizDatos, dbscan::listaIndices, false);
+            }
             break;
     }
     // Ahora sí, cuando haga Refresh, tendrá los datos correctos
@@ -156,7 +165,8 @@ void MyFrame::OnlimpiaClick(wxCommandEvent& event) {
 }
 
 void MyFrame::OnGuardarClick(wxCommandEvent& event) {
-    if (canvas->puntos_plot.empty()) {
+    // 1. NUEVA VALIDACIÓN: Revisamos el canvas (números) O la matriz categórica (textos)
+    if (canvas->puntos_plot.empty() && maxmin::matrizDatosCat.empty()) {
         wxMessageBox("No hay datos calculados para guardar.", "Error", wxICON_ERROR);
         return;
     }
@@ -166,12 +176,7 @@ void MyFrame::OnGuardarClick(wxCommandEvent& event) {
                                 "Archivos CSV (*.csv)|*.csv|Archivos de texto (*.txt)|*.txt",
                                 wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-    // Si cancelamos, no hacemos nada
-    if (saveFileDialog.ShowModal() == wxID_CANCEL) {
-        return;
-    }
-
-    // Preparamos el archivo para escribir
+    if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
     std::ofstream archivoSalida(saveFileDialog.GetPath().ToStdString());
 
     if (!archivoSalida.is_open()) {
@@ -179,46 +184,51 @@ void MyFrame::OnGuardarClick(wxCommandEvent& event) {
         return;
     }
 
-    // Encabezado
-    archivoSalida << "@Archivo generado con los datos ya clasificados\n";
+    archivoSalida << "@comentario Archivo generado con los datos ya clasificados\n";
+    if (maxmin::esCategorico) {
+        // guardado de textos
+        //int dimensiones = maxmin::matrizDatosCat[0].size();
 
-    int dimensiones = canvas->puntos_plot[0].size();
+        // Encabezados genéricos para atributos
+       // for (int d = 1; d <= dimensiones; ++d) {
+        //    archivoSalida << "Atributo_" << d << ",";
+      //  }
+       // archivoSalida << "clase\n";
+        // Recorremos y escribimos
+        for (size_t i = 0; i < maxmin::matrizDatosCat.size(); ++i) {
+            // Escribimos las palabras
+            for (size_t d = 0; d < maxmin::matrizDatosCat[i].size(); ++d) {
+                archivoSalida << maxmin::matrizDatosCat[i][d] << ",";
+            }
+            // Sacamos la clase directamente de la memoria de DBSCAN
+            int clase = (i < dbscan::listaIndices.size()) ? dbscan::listaIndices[i] : -1;
 
-    if (dimensiones == 2) {
-        archivoSalida << "x,y,clase\n";
-    } else if (dimensiones == 3) {
-        archivoSalida << "x,y,z,clase\n";
+            if (clase == -2) archivoSalida << "Ruido\n";
+            else if (clase == -1) archivoSalida << "Sin_Asignar\n";
+            else archivoSalida << clase << "\n";
+        }
+
     } else {
-        // Si el dataset tiene 4 o más dimensiones (Hiperespacio)
-        for (int d = 1; d <= dimensiones; ++d) {
-            archivoSalida << "dim" << d << ",";
-        }
-        archivoSalida << "clase\n";
-    }
+        // guardando numeros
+        int dimensiones = canvas->puntos_plot[0].size();
 
-    // Recorremos los datos y los escribimos
-    for (size_t i = 0; i < canvas->puntos_plot.size(); ++i) {
-        // Escribimos las coordenadas (X, Y, Z...)
-        for (size_t d = 0; d < canvas->puntos_plot[i].size(); ++d) {
-            archivoSalida << canvas->puntos_plot[i][d] << ",";
+        if (dimensiones == 2) archivoSalida << "x,y,clase\n";
+        else if (dimensiones == 3) archivoSalida << "x,y,z,clase\n";
+        else {
+            for (int d = 1; d <= dimensiones; ++d) archivoSalida << "dim" << d << ",";
+            archivoSalida << "clase\n";
         }
 
-        // Escribimos el grupo al final de la línea
-        int clase;
-        // Verificamos que el índice i exista en la lista de clases
-        if (i < canvas->clases_plot.size()) {
-            clase = canvas->clases_plot[i]; // Si existe, le asignamos su grupo real
-        } else {
-            clase = -1; // Si por alguna razón no existe, lo marcamos como -1
-        }
+        for (size_t i = 0; i < canvas->puntos_plot.size(); ++i) {
+            for (size_t d = 0; d < canvas->puntos_plot[i].size(); ++d) {
+                archivoSalida << canvas->puntos_plot[i][d] << ",";
+            }
 
-        // el ruido de DBSCAN se guarda con una etiqueta
-        if (clase == -2) {
-            archivoSalida << "Ruido\n";
-        } else if (clase == -1) {
-            archivoSalida << "Sin_Asignar\n";
-        } else {
-            archivoSalida << "Grupo_" << clase << "\n";
+            int clase = (i < canvas->clases_plot.size()) ? canvas->clases_plot[i] : -1;
+
+            if (clase == -2) archivoSalida << "Ruido\n";
+            else if (clase == -1) archivoSalida << "Sin_Asignar\n";
+            else archivoSalida  << clase << "\n";
         }
     }
     archivoSalida.close();

@@ -14,6 +14,8 @@ public:
     static double umbral;
     static double dist_mayor;
     static std::vector<std::vector<double>> matrizDistancias;
+    static std::vector<std::vector<std::string>> matrizDatosCat;
+    static bool esCategorico;
     static int num_clases;
 
     static void max_min_ini(wxTextCtrl *out);
